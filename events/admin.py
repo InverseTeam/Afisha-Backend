@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 from events.models import Event, Platform, Tag, Category, Comment
 
 
@@ -21,9 +22,9 @@ class PlatformAdmin(admin.ModelAdmin):
 
 
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'category', 'description', 'age_limit', 'platform', 'price', 'persons_limit', 'open')
-    search_fields = ('id', 'name', 'category', 'age_limit', 'persons_limit')
-    list_filter = ('id', 'name', 'category', 'age_limit', 'persons_limit')
+    list_display = ('id', 'name', 'category', 'description', 'age_limit', 'platform', 'price', 'total_tickets', 'open', 'when', 'cover')
+    search_fields = ('id', 'name', 'category', 'age_limit', 'total_tickets')
+    list_filter = ('id', 'name', 'category', 'age_limit', 'total_tickets')
 
 
 class CommentAdmin(admin.ModelAdmin):

@@ -8,9 +8,12 @@ from django_currentuser.db.models import CurrentUserField
 class ArtistType(models.Model):
     name = models.CharField(max_length=100, verbose_name='Название')
 
+    def __str__(self):
+        return self.name
+
     class Meta:
-        verbose_name = 'Артист'
-        verbose_name_plural = 'Артисты'
+        verbose_name = 'Тип артиста'
+        verbose_name_plural = 'Типы артистов'
 
 
 class Artist(models.Model):
@@ -21,7 +24,10 @@ class Artist(models.Model):
     surname = models.CharField(max_length=100, verbose_name='Отчество')
     birthday = models.DateField(verbose_name='День рождения')
     artist_type = models.ForeignKey('ArtistType', blank=True, null=True, on_delete=models.CASCADE, related_name='artists_artisttype', verbose_name='Тип артиста')
-    manager = CurrentUserField(verbose_name='Автор курса')
+    manager = CurrentUserField(verbose_name='Менеджер')
+
+    def __str__(self):
+        return self.nickname
 
     class Meta:
         verbose_name = 'Артист'
@@ -30,7 +36,10 @@ class Artist(models.Model):
 
 class Role(models.Model):
     name = models.CharField(max_length=60, verbose_name='Название')
-    role_id = models.IntegerField(verbose_name='ID')
+    role_type = models.CharField(max_length=80, verbose_name='Тип')
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         verbose_name = 'Роль'
@@ -74,6 +83,7 @@ class CustomUser(AbstractUser):
     lastname = models.CharField(max_length=256, blank=True, verbose_name='Фамилия')
     role = models.ForeignKey('Role', default=1, on_delete=models.CASCADE, related_name='users_role', verbose_name='Роль')
     age = models.IntegerField(blank=True, null=True, verbose_name='Возраст')
+    money = models.IntegerField(default=0, verbose_name='Виртуальный счёт')
     password = models.CharField(max_length=256, verbose_name='Пароль')
 
     USERNAME_FIELD = 'email'

@@ -1,11 +1,14 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django_currentuser.db.models import CurrentUserField
-from users.models import Artist
+from users.models import Artist, CustomUser
 
 
 class Tag(models.Model):
     name = models.CharField(max_length=100, verbose_name='Название')
+    
+    def __str__(self):
+        return self.name
 
     class Meta:
         verbose_name = 'Тэг'
@@ -15,6 +18,9 @@ class Tag(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=100, verbose_name='Название')
     tags = models.ManyToManyField('Tag', verbose_name='Тэги')
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         verbose_name = 'Категория'
@@ -27,6 +33,9 @@ class Platform(models.Model):
     location = models.TextField(verbose_name='Расположение')
     support_phone = models.CharField(max_length=100, verbose_name='Телефон поддержки')
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         verbose_name = 'Площадка'
         verbose_name_plural = 'Площадки'
@@ -37,6 +46,9 @@ class Comment(models.Model):
     rating = models.IntegerField(default=0, validators=[MinValueValidator(1), MaxValueValidator(5)], verbose_name='Оценка')
     comment_text = models.TextField(verbose_name='Комментарий')
 
+    def __str__(self):
+        return self.comment_text
+
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
@@ -45,7 +57,7 @@ class Comment(models.Model):
 class Event(models.Model):
     name = models.CharField(max_length=256, verbose_name='Название')
     cover = models.ImageField(blank=True, null=True, upload_to='events/images/', verbose_name='Баннер')
-    category = models.ForeignKey('Category', blank=True, on_delete=models.DO_NOTHING, verbose_name='Категория')
+    category = models.ForeignKey('Category', blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='Категория')
     tags = models.ManyToManyField('Tag', verbose_name='Тэги')
     description = models.TextField(verbose_name='Описание')
     age_limit = models.IntegerField(default=0, verbose_name='Возрастное орграничение')
@@ -53,9 +65,14 @@ class Event(models.Model):
     platform = models.ForeignKey('Platform', blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='Площадка')
     video = models.TextField(blank=True, null=True, verbose_name='Ссылка на видео')
     price = models.IntegerField(default=0, verbose_name='Цена')
-    persons_limit = models.IntegerField(blank=True, null=True, verbose_name='Максимальное количество человек')
+    total_tickets = models.IntegerField(blank=True, null=True, verbose_name='Всего билетов')
+    tickets = models.ManyToManyField(CustomUser, blank=True, related_name='events_user', verbose_name='Билеты')
     open = models.BooleanField(default=True, verbose_name='Событие открыто')
     comments = models.ManyToManyField('Comment', blank=True, related_name='events_comment', verbose_name='Комментарии')
+    when = models.DateTimeField(blank=True, null=True, verbose_name='Дата и время')
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         verbose_name = 'Событие'

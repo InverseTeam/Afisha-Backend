@@ -2,7 +2,13 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from users.forms import UserChangeForm, UserCreationForm
-from users.models import CustomUser, Role, Artist
+from users.models import CustomUser, Role, Artist, ArtistType
+
+
+class ArtistTypeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('id', 'name')
+    list_filter = ('id', 'name')
 
 
 class ArtistAdmin(admin.ModelAdmin):
@@ -12,8 +18,8 @@ class ArtistAdmin(admin.ModelAdmin):
 
 
 class RoleAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'role_id')
-    search_fields = ('id', 'name', 'role_id')
+    list_display = ('id', 'name', 'role_type')
+    search_fields = ('id', 'name', 'role_type')
     list_filter = ('name',)
 
 
@@ -21,7 +27,7 @@ class UserAdmin(BaseUserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
 
-    list_display = ('id', 'email', 'phone_number', 'firstname', 'lastname', 'age', 'role', 'is_superuser')
+    list_display = ('id', 'email', 'phone_number', 'firstname', 'lastname', 'age', 'money', 'role', 'is_superuser')
     list_filter = ('is_superuser',)
     fieldsets = (
         (None, {'fields': ('email', 'firstname', 'lastname', 'age', 'role', 'password')}),
@@ -37,6 +43,7 @@ class UserAdmin(BaseUserAdmin):
     filter_horizontal = ()
 
 
+admin.site.register(ArtistType, ArtistTypeAdmin)
 admin.site.register(Artist, ArtistAdmin)
 admin.site.register(Role, RoleAdmin)
 admin.site.register(CustomUser, UserAdmin)
