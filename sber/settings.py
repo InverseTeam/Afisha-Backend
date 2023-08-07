@@ -124,7 +124,7 @@ STATIC_URL = 'static/'
 STATIC_ROOT = '/home/b/belogugx/inverse-tracker.store/public_html/static'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-MEDIA_URL = '/media/'
+MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 # Default primary key field type

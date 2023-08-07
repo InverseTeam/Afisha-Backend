@@ -2,7 +2,7 @@ from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from events.models import Event, Platform, Category, Tag, EntryCondition
-from events.serializers import CommentSerializer, EventSerializer, PlatformSerializer, CategorySerializer, TagSerializer, EntryConditionSerializer
+from events.serializers import CommentSerializer, EventSerializer, PlatformSerializer, CategorySerializer, TagSerializer, EntryConditionSerializer, EventWriteSerializer, EventReadSerializer, EventCorrectSerializer
 from users.models import CustomUser
 from users.permissions import IsManager
 
@@ -17,8 +17,25 @@ class EventAPIListCreate(generics.ListCreateAPIView):
 
 class EventAPIDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Event.objects.all()
-    serializer_class = EventSerializer
     permission_classes = [IsManager]
+
+    def get(self, request, pk):
+        event = Event.objects.get(pk=pk)
+        serializer = EventReadSerializer(event)
+        
+        return Response(serializer.data)
+    
+
+    # def patch(self, request, pk):
+    #     event = Event.objects.get(pk=pk)
+    #     serializer = EventWriteSerializer(event, data=request.data, partial=True)
+
+    #     if serializer.is_valid():
+    #         serializer.save()
+
+    #         return Response(serializer.data)
+        
+    #     return Response(serializer.errors, status=400)
 
 
 class EventAPIPLatformListView(generics.ListAPIView):
@@ -85,9 +102,11 @@ class CategoryAPIListView(generics.ListAPIView):
 
 
 class TagAPIListView(generics.ListAPIView):
-    queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Category.objects.get(pk=self.kwargs['pk']).tags.all()
 
 
 class CommentAPICreateView(generics.CreateAPIView):

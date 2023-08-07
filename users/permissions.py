@@ -7,7 +7,7 @@ class IsManager(permissions.BasePermission):
                 if request.method in permissions.SAFE_METHODS:
                     return True
 
-                return request.user.role.roly_type == 'manager'
+                return request.user.role.role_type == 'manager'
 
             return False
 

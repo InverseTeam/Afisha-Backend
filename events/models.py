@@ -40,8 +40,8 @@ class Category(models.Model):
 
 class Platform(models.Model):
     name = models.CharField(max_length=256, verbose_name='Площадка')
-    description = models.TextField(verbose_name='Описание')
-    location = models.TextField(verbose_name='Расположение')
+    description = models.TextField(blank=True, null=True, verbose_name='Описание')
+    location = models.TextField(blank=True, null=True, verbose_name='Расположение')
     support_phone = models.CharField(max_length=100, verbose_name='Телефон поддержки')
 
     def __str__(self):
@@ -65,9 +65,17 @@ class Comment(models.Model):
         verbose_name_plural = 'Комментарии'
 
 
+class EventImage(models.Model):
+    image = models.ImageField(blank=True, null=True, upload_to='events/images/', verbose_name='Баннер')
+
+    class Meta:
+        verbose_name = 'Файл события'
+        verbose_name_plural = 'Файлы события'
+
+
 class Event(models.Model):
     name = models.CharField(default='', max_length=256, verbose_name='Название')
-    cover = models.ImageField(blank=True, null=True, upload_to='events/images/', verbose_name='Баннер')
+    cover = models.ImageField(blank=True, null=True, upload_to='events/covers/', verbose_name='Баннер')
     category = models.ForeignKey('Category', blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='Категория')
     tags = models.ManyToManyField('Tag', verbose_name='Тэги')
     description = models.TextField(blank=True, null=True, verbose_name='Описание')
@@ -75,6 +83,7 @@ class Event(models.Model):
     artists = models.ManyToManyField(Artist, blank=True, related_name='events_artist', verbose_name='Артисты')
     platform = models.ForeignKey('Platform', blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='Площадка')
     video = models.TextField(blank=True, null=True, verbose_name='Ссылка на видео')
+    images = models.ManyToManyField('EventImage', blank=True, related_name='events_image', verbose_name='Фотографии мероприятия')
     price = models.IntegerField(default=0, verbose_name='Цена')
     total_tickets = models.IntegerField(blank=True, null=True, verbose_name='Всего билетов')
     tickets = models.ManyToManyField(CustomUser, blank=True, related_name='events_user', verbose_name='Билеты')
@@ -89,3 +98,6 @@ class Event(models.Model):
     class Meta:
         verbose_name = 'Событие'
         verbose_name_plural = 'События'
+
+
+

@@ -14,22 +14,23 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.conf.urls.static import static
 from django.urls import path, include, re_path
+from sber.settings import MEDIA_ROOT, MEDIA_URL
 from users.views import *
 from events.views import *
 from routes.views import *
+from rest_framework import routers
+
 
 urlpatterns = [
-    # Admin
-    path('admin/', admin.site.urls),
-
     # Events
     path('api/events/', EventAPIListCreate.as_view()),
     path('api/events/tickets/my/', EventAPIMyTicketsView.as_view()),
     path('api/events/<int:pk>/', EventAPIDetailView.as_view()),
     path('api/events/platforms/', PlatformAPIListView.as_view()),
     path('api/events/categories/', CategoryAPIListView.as_view()),
-    path('api/events/tags/', TagAPIListView.as_view()),
+    path('api/events/categories/<int:pk>/tags/', TagAPIListView.as_view()),
     path('api/events/categories/<int:pk>/', EventAPICategoryListView.as_view()),
     path('api/events/tags/<int:pk>/', EventAPITagListView.as_view()),
     path('api/events/platforms/<int:pk>/', EventAPIPLatformListView.as_view()),
@@ -52,6 +53,10 @@ urlpatterns = [
     path('api/artists/<int:pk>/', ArtistsAPIDetailView.as_view()),
     path('api/artists/manager/my/', ArtistsAPIMyListView.as_view()),
     path('api/users/auth/', include('djoser.urls')),
-    re_path(r'^api/users/auth/', include('djoser.urls.authtoken'))
+    re_path(r'^api/users/auth/', include('djoser.urls.authtoken')),
+
+    # Admin
+    path('admin/', admin.site.urls),
 ]
 
+urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from events.models import Event, Platform, Tag, Category, Comment, EntryCondition
+from events.models import Event, EventImage, Platform, Tag, Category, Comment, EntryCondition
 
 
 class EntryConditionAdmin(admin.ModelAdmin):
@@ -26,6 +26,10 @@ class PlatformAdmin(admin.ModelAdmin):
     list_filter = ('id', 'name')
 
 
+class EventImageAdmin(admin.ModelAdmin):
+    list_display = ('id', 'image')
+
+
 class EventAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'category', 'description', 'age_limit', 'platform', 'price', 'total_tickets', 'open', 'when', 'cover')
     search_fields = ('id', 'name', 'category', 'age_limit', 'total_tickets')
@@ -42,5 +46,6 @@ admin.site.register(EntryCondition, EntryConditionAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Platform, PlatformAdmin)
+admin.site.register(EventImage, EventImageAdmin)
 admin.site.register(Event, EventAdmin)
 admin.site.register(Comment, CommentAdmin)
