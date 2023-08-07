@@ -1,7 +1,12 @@
 from django.contrib import admin
-from django.utils.safestring import mark_safe
-from events.models import Event, Platform, Tag, Category, Comment
+from events.models import Event, Platform, Tag, Category, Comment, EntryCondition
 
+
+class EntryConditionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('id', 'name')
+    list_filter = ('id', 'name')
+    
 
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
@@ -33,6 +38,7 @@ class CommentAdmin(admin.ModelAdmin):
     list_filter = ('id', 'user', 'rating')
 
 
+admin.site.register(EntryCondition, EntryConditionAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Platform, PlatformAdmin)

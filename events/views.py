@@ -1,8 +1,8 @@
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from events.models import Event, Platform, Category, Tag
-from events.serializers import CommentSerializer, EventSerializer, PlatformSerializer, CategorySerializer, TagSerializer
+from events.models import Event, Platform, Category, Tag, EntryCondition
+from events.serializers import CommentSerializer, EventSerializer, PlatformSerializer, CategorySerializer, TagSerializer, EntryConditionSerializer
 from users.models import CustomUser
 from users.permissions import IsManager
 
@@ -92,6 +92,7 @@ class TagAPIListView(generics.ListAPIView):
 
 class CommentAPICreateView(generics.CreateAPIView):
     serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
     
     def post(self, request, *args, **kwargs):
         serializer = CommentSerializer(data=request.data)
@@ -106,3 +107,9 @@ class CommentAPICreateView(generics.CreateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class EntryConditionAPIListView(generics.ListAPIView):
+    queryset = EntryCondition.objects.all()
+    serializer_class = EntryConditionSerializer
+    permission_classes = [IsAuthenticated]

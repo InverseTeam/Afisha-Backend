@@ -35,6 +35,7 @@ urlpatterns = [
     path('api/events/platforms/<int:pk>/', EventAPIPLatformListView.as_view()),
     path('api/events/<int:pk>/tickets/buy/', EventAPITicketBuyView.as_view()),
     path('api/events/<int:pk>/comments/add/', CommentAPICreateView.as_view()),
+    path('api/events/conditions/', EntryConditionAPIListView.as_view()),
 
     # Routes
     path('api/routes/', RouteAPIListCreateView.as_view()),
