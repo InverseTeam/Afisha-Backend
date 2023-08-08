@@ -24,10 +24,14 @@ from rest_framework import routers
 
 
 urlpatterns = [
+    # Admin
+    path('admin/', admin.site.urls),
+
     # Events
     path('api/events/', EventAPIListCreate.as_view()),
     path('api/events/tickets/my/', EventAPIMyTicketsView.as_view()),
     path('api/events/<int:pk>/', EventAPIDetailView.as_view()),
+    path('api/events/images/', EventImageAPICreateView.as_view()),
     path('api/events/platforms/', PlatformAPIListView.as_view()),
     path('api/events/categories/', CategoryAPIListView.as_view()),
     path('api/events/categories/<int:pk>/tags/', TagAPIListView.as_view()),
@@ -53,10 +57,7 @@ urlpatterns = [
     path('api/artists/<int:pk>/', ArtistsAPIDetailView.as_view()),
     path('api/artists/manager/my/', ArtistsAPIMyListView.as_view()),
     path('api/users/auth/', include('djoser.urls')),
-    re_path(r'^api/users/auth/', include('djoser.urls.authtoken')),
-
-    # Admin
-    path('admin/', admin.site.urls),
+    re_path(r'^api/users/auth/', include('djoser.urls.authtoken'))
 ]
 
 urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)

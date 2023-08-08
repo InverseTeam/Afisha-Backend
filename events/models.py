@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django_currentuser.db.models import CurrentUserField
@@ -66,7 +67,12 @@ class Comment(models.Model):
 
 
 class EventImage(models.Model):
-    image = models.ImageField(blank=True, null=True, upload_to='events/images/', verbose_name='Баннер')
+    def get_path(instance, filename):
+        extension = filename.split('.')[-1]
+        uuid = uuid.uuid1().hex
+        return f'events/images/{uuid}.{extension}'
+    
+    image = models.ImageField(blank=True, null=True, upload_to=get_path, verbose_name='Баннер')
 
     class Meta:
         verbose_name = 'Файл события'
@@ -74,8 +80,13 @@ class EventImage(models.Model):
 
 
 class Event(models.Model):
+    def get_path(instance, filename):
+        extension = filename.split('.')[-1]
+        image_uuid = uuid.uuid1().hex
+        return f'events/covers/{image_uuid}.{extension}'
+    
     name = models.CharField(default='', max_length=256, verbose_name='Название')
-    cover = models.ImageField(blank=True, null=True, upload_to='events/covers/', verbose_name='Баннер')
+    cover = models.ImageField(blank=True, null=True, upload_to=get_path, verbose_name='Баннер')
     category = models.ForeignKey('Category', blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='Категория')
     tags = models.ManyToManyField('Tag', verbose_name='Тэги')
     description = models.TextField(blank=True, null=True, verbose_name='Описание')
