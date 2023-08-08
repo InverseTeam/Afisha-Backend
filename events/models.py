@@ -66,6 +66,46 @@ class Comment(models.Model):
         verbose_name_plural = 'Комментарии'
 
 
+class TicketType(models.Model):
+    sector = models.CharField(default='Зал', max_length=255, verbose_name='Сектор')
+    tickets_number = models.IntegerField(default=0, verbose_name='Количество билетов')
+    price = models.IntegerField(default=0, verbose_name='Цена')
+
+    def __str__(self):
+        return self.sector
+
+    class Meta:
+        verbose_name = 'Тип билета'
+        verbose_name_plural = 'Типы билетов'
+
+
+class Ticket(models.Model):
+    buyer = CurrentUserField(related_name='tickets_user', verbose_name='Покупатель')
+    ticket_type = models.ForeignKey('TicketType', related_name='tickets_tickettype', on_delete=models.DO_NOTHING, verbose_name='Тип билета')
+
+    def __str__(self):
+        return self.buyer.email
+
+    class Meta:
+        verbose_name = 'Билет'
+        verbose_name_plural = 'Билеты'
+
+
+class Performance(models.Model):
+    name = models.CharField(default='Выступление', max_length=255, verbose_name='Название выступления')
+    time = models.TimeField(blank=True, null=True, verbose_name='Время')
+    date = models.DateField(blank=True, null=True, verbose_name='Дата')
+    ticket_types = models.ManyToManyField('TicketType', blank=True, related_name='performances_tickettype', verbose_name='Типы билетов')
+    tickets = models.ManyToManyField('Ticket', blank=True, related_name='performance_ticket', verbose_name='Билеты')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Выступление'
+        verbose_name_plural = 'Выступления'
+
+
 class EventImage(models.Model):
     def get_path(instance, filename):
         extension = filename.split('.')[-1]
@@ -88,20 +128,18 @@ class Event(models.Model):
     name = models.CharField(default='', max_length=256, verbose_name='Название')
     cover = models.ImageField(blank=True, null=True, upload_to=get_path, verbose_name='Баннер')
     category = models.ForeignKey('Category', blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='Категория')
-    tags = models.ManyToManyField('Tag', verbose_name='Тэги')
+    tags = models.ManyToManyField('Tag', blank=True, related_name='events_tag', verbose_name='Тэги')
     description = models.TextField(blank=True, null=True, verbose_name='Описание')
     age_limit = models.IntegerField(default=0, verbose_name='Возрастное орграничение')
-    artists = models.ManyToManyField(Artist, blank=True, related_name='events_artist', verbose_name='Артисты')
     platform = models.ForeignKey('Platform', blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='Площадка')
+    performances = models.ManyToManyField('Performance', blank=True, related_name='events_performance', verbose_name='Выступления')
     video = models.TextField(blank=True, null=True, verbose_name='Ссылка на видео')
     images = models.ManyToManyField('EventImage', blank=True, related_name='events_image', verbose_name='Фотографии мероприятия')
-    price = models.IntegerField(default=0, verbose_name='Цена')
-    total_tickets = models.IntegerField(blank=True, null=True, verbose_name='Всего билетов')
-    tickets = models.ManyToManyField(CustomUser, blank=True, related_name='events_user', verbose_name='Билеты')
     open = models.BooleanField(default=True, blank=True, verbose_name='Событие открыто')
     comments = models.ManyToManyField('Comment', blank=True, related_name='events_comment', verbose_name='Комментарии')
-    when = models.DateTimeField(blank=True, null=True, verbose_name='Дата и время')
     entry_condition = models.ForeignKey('EntryCondition', blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='Условия входа')
+    artists = models.ManyToManyField(Artist, blank=True, related_name='events_artist', verbose_name='Артисты')
+    manager = CurrentUserField(related_name='events_manager', verbose_name='Менеджер')
 
     def __str__(self):
         return self.name
@@ -109,6 +147,3 @@ class Event(models.Model):
     class Meta:
         verbose_name = 'Событие'
         verbose_name_plural = 'События'
-
-
-
