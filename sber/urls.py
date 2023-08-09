@@ -29,12 +29,13 @@ schema_view = get_swagger_view(title='Сбер Афиша API')
 urlpatterns = [
     # Swagger
     url(r'^$', schema_view),
-
+    
     # Admin
     path('admin/', admin.site.urls),
 
     # Events
     path('api/events/', EventAPIListCreate.as_view()),
+    path('api/events/filter/', EventAPIFilterListView.as_view()),
     path('api/events/manager/my/', EventAPIMyListView.as_view()),
     path('api/events/<int:pk>/', EventAPIDetailView.as_view()),
     path('api/events/images/create/', EventImageAPICreateView.as_view()),
@@ -67,7 +68,7 @@ urlpatterns = [
     path('api/artists/<int:pk>/', ArtistsAPIDetailView.as_view()),
     path('api/artists/manager/my/', ArtistsAPIMyListView.as_view()),
     path('api/users/auth/', include('djoser.urls')),
-    re_path(r'^api/users/auth/', include('djoser.urls.authtoken'))
+    re_path(r'^api/users/auth/', include('djoser.urls.authtoken')),
 ]
 
 urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)

@@ -93,7 +93,7 @@ class EventReadSerializer(serializers.ModelSerializer):
         model = Event
         fields = ('id', 'name', 'category', 'tags', 'description', 'age_limit', 'platform', 'video',
                 'tickets', 'open', 'entry_condition', 'artists', 'manager', 'comments', 'performances',
-                'tickets_number', 'tickets_sold', 'cover', 'images')
+                'start_date', 'end_date', 'tickets_number', 'tickets_sold', 'cover', 'images')
         
 
 class EventWriteSerializer(serializers.ModelSerializer):

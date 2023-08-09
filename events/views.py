@@ -32,9 +32,34 @@ class EventAPIListCreate(generics.ListCreateAPIView):
 
 class EventAPIMyListView(generics.ListAPIView):
     serializer_class = EventReadSerializer
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         return Event.objects.filter(artists__manager__pk=self.request.user.pk)
+    
+
+class EventAPIFilterListView(generics.ListAPIView):
+    serializer_class = EventReadSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        events = Event.objects
+        desired_date = self.request.GET.get('date', None)
+        category = self.request.GET.get('category', None)
+        tags = self.request.GET.get('tags', None)
+        price_limit = self.request.GET.get('price_limit', None)
+        age_limit = self.request.GET.get('age_limit', None)
+
+        if desired_date: events = events.filter(performances__date=desired_date)
+        if category: events = events.filter(category=category)
+        if price_limit: events = events.filter(price__lte=price_limit)
+        if age_limit: events = events.filter(age_limit__lte=age_limit)
+        
+        if tags: 
+            tags = tags.split(',')
+            events = events.filter(tags__in=tags)
+
+        return events
 
 
 class EventAPIDetailView(generics.RetrieveUpdateDestroyAPIView):

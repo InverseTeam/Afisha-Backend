@@ -1,6 +1,8 @@
 import uuid
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models.signals import pre_delete
+from django.dispatch.dispatcher import receiver
 from django_currentuser.db.models import CurrentUserField
 from users.models import Artist, CustomUser
 
@@ -156,3 +158,30 @@ class Event(models.Model):
         ordering = ['-start_date']
         verbose_name = 'Событие'
         verbose_name_plural = 'События'
+
+
+@receiver(pre_delete, sender=Event)
+def image_model_delete(sender, instance, **kwargs):
+    if instance.cover:
+        instance.cover.delete(False)
+
+    if instance.images:
+        for image in instance.images:
+            image.image.delete(False)
+            image.delete()
+
+    if instance.performances:
+        for performance in instance.performances:
+            for ticket_type in performance.ticket_types:
+                ticket_type.delete()
+
+            for ticket in performance.tickets:
+                ticket.delete()
+
+        performance.delete()
+
+    if instance.comments:
+        for comment in instance.comments:
+            comment.delete()
+
+    
