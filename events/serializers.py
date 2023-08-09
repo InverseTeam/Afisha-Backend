@@ -92,7 +92,8 @@ class EventReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ('id', 'name', 'category', 'tags', 'description', 'age_limit', 'platform', 'video',
-                'tickets', 'open', 'entry_condition', 'artists', 'manager', 'comments', 'performances', 'cover', 'images')
+                'tickets', 'open', 'entry_condition', 'artists', 'manager', 'comments', 'performances',
+                'tickets_number', 'tickets_sold', 'cover', 'images')
         
 
 class EventWriteSerializer(serializers.ModelSerializer):
@@ -109,4 +110,5 @@ class EventWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ('id', 'name', 'category', 'tags', 'description', 'age_limit', 'platform', 'video',
-                'tickets', 'open', 'entry_condition', 'artists', 'manager', 'comments', 'start_date', 'end_date', 'cover', 'images')
+                'tickets', 'open', 'entry_condition', 'artists', 'manager', 'comments', 'start_date',
+                'end_date', 'cover', 'images')

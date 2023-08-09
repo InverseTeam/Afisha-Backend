@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
     'corsheaders',
+    'rest_framework_swagger',
     'users.apps.UsersConfig',
     'routes.apps.RoutesConfig',
     'events.apps.EventsConfig',
@@ -121,6 +122,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = '/home/b/belogugx/inverse-tracker.store/public_html/static'
 STATIC_ROOT = '/home/b/belogugx/inverse-tracker.store/public_html/static'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
@@ -144,7 +146,9 @@ REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication'
-    ]
+    ],
+
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
 }
 
 DJOSER = {

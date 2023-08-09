@@ -146,6 +146,8 @@ class Event(models.Model):
     open = models.BooleanField(default=True, blank=True, verbose_name='Событие открыто')
     start_date = models.DateField(blank=True, null=True, verbose_name='Дата начала')
     end_date = models.DateField(blank=True, null=True, verbose_name='Дата конца')
+    tickets_number = models.IntegerField(default=0, verbose_name='Количество билетов')
+    tickets_sold = models.IntegerField(default=0, verbose_name='Билетов продано')
 
     def __str__(self):
         return self.name

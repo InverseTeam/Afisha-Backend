@@ -21,9 +21,15 @@ from users.views import *
 from events.views import *
 from routes.views import *
 from rest_framework import routers
+from django.conf.urls import url
+from rest_framework_swagger.views import get_swagger_view
 
+schema_view = get_swagger_view(title='Сбер Афиша API')
 
 urlpatterns = [
+    # Swagger
+    url(r'^$', schema_view),
+
     # Admin
     path('admin/', admin.site.urls),
 

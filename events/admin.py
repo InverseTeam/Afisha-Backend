@@ -49,7 +49,8 @@ class EventImageAdmin(admin.ModelAdmin):
 
 
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'category', 'description', 'age_limit', 'platform', 'open', 'manager', 'start_date', 'end_date', 'cover')
+    list_display = ('id', 'name', 'category', 'description', 'age_limit', 'platform', 'open', 'manager',
+                    'start_date', 'end_date', 'tickets_number', 'tickets_sold', 'cover')
     search_fields = ('id', 'name', 'category', 'age_limit', 'manager')
     list_filter = ('id', 'name', 'category', 'age_limit', 'manager')
 

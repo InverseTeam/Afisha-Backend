@@ -1,7 +1,7 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
-from users.models import Artist
-from users.serializers import ArtistSerializer
+from users.models import Artist, CustomUser
+from users.serializers import ArtistSerializer, CustomUserSerializer
 from users.permissions import IsArtistManager, IsManager
 
 

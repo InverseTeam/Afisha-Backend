@@ -8,6 +8,7 @@ from users.permissions import IsManager
 
 
 class EventAPIListCreate(generics.ListCreateAPIView):
+    serializer_class = EventReadSerializer
     permission_classes = [IsManager]
 
     def get(self, request):
@@ -38,6 +39,7 @@ class EventAPIMyListView(generics.ListAPIView):
 
 class EventAPIDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Event.objects.all()
+    serializer_class = EventReadSerializer
     permission_classes = [IsManager]
 
     def get(self, request, pk):
@@ -184,6 +186,10 @@ class TicketTypeAPICreateView(generics.CreateAPIView):
             performance.ticket_types.add(ticket_type.pk)
             performance.save()
 
+            for event in performance.events_performance.all():
+                event.tickets_number += ticket_type.tickets_number
+                event.save()
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
@@ -233,7 +239,9 @@ class TicketAPICreateView(generics.CreateAPIView):
 
                 if True in performances_open:
                     event.open = False
-                    event.save()
+
+                event.tickets_sold += 1
+                event.save()
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
