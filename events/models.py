@@ -68,8 +68,10 @@ class Comment(models.Model):
 
 class TicketType(models.Model):
     sector = models.CharField(default='Зал', max_length=255, verbose_name='Сектор')
-    tickets_number = models.IntegerField(default=0, verbose_name='Количество билетов')
     price = models.IntegerField(default=0, verbose_name='Цена')
+    tickets_number = models.IntegerField(default=0, verbose_name='Количество билетов')
+    tickets_sold = models.IntegerField(default=0, verbose_name='Билетов продано')
+    open = models.BooleanField(default=True, blank=True, verbose_name='Открыто')
 
     def __str__(self):
         return self.sector
@@ -97,11 +99,13 @@ class Performance(models.Model):
     date = models.DateField(blank=True, null=True, verbose_name='Дата')
     ticket_types = models.ManyToManyField('TicketType', blank=True, related_name='performances_tickettype', verbose_name='Типы билетов')
     tickets = models.ManyToManyField('Ticket', blank=True, related_name='performance_ticket', verbose_name='Билеты')
+    open = models.BooleanField(default=True, blank=True, verbose_name='Открыто')
 
     def __str__(self):
         return self.name
 
     class Meta:
+        ordering = ['date']
         verbose_name = 'Выступление'
         verbose_name_plural = 'Выступления'
 
@@ -135,15 +139,18 @@ class Event(models.Model):
     performances = models.ManyToManyField('Performance', blank=True, related_name='events_performance', verbose_name='Выступления')
     video = models.TextField(blank=True, null=True, verbose_name='Ссылка на видео')
     images = models.ManyToManyField('EventImage', blank=True, related_name='events_image', verbose_name='Фотографии мероприятия')
-    open = models.BooleanField(default=True, blank=True, verbose_name='Событие открыто')
     comments = models.ManyToManyField('Comment', blank=True, related_name='events_comment', verbose_name='Комментарии')
     entry_condition = models.ForeignKey('EntryCondition', blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='Условия входа')
     artists = models.ManyToManyField(Artist, blank=True, related_name='events_artist', verbose_name='Артисты')
     manager = CurrentUserField(related_name='events_manager', verbose_name='Менеджер')
+    open = models.BooleanField(default=True, blank=True, verbose_name='Событие открыто')
+    start_date = models.DateField(blank=True, null=True, verbose_name='Дата начала')
+    end_date = models.DateField(blank=True, null=True, verbose_name='Дата конца')
 
     def __str__(self):
         return self.name
 
     class Meta:
+        ordering = ['-start_date']
         verbose_name = 'Событие'
         verbose_name_plural = 'События'

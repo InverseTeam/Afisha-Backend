@@ -74,33 +74,6 @@ class EventAPITagListView(generics.ListAPIView):
         return Event.objects.filter(tags__id=self.kwargs['pk'])
     
 
-class EventAPITicketBuyView(generics.UpdateAPIView):
-    serializer_class = EventWriteSerializer
-    permission_classes = [IsAuthenticated]
-
-    def update(self, request, *args, **kwargs):
-        obj = Event.objects.get(pk=self.kwargs['pk'])
-        customer = self.request.user
-
-        customer.money -= obj.price
-
-        obj.tickets.add(customer.pk)
-        obj.save()
-        customer.save()
-
-        serializer = EventWriteSerializer(obj, required=False)
-
-        return Response(serializer.data, status=status.HTTP_206_PARTIAL_CONTENT)
-    
-
-class EventAPIMyTicketsView(generics.ListAPIView):
-    serializer_class = EventReadSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return self.request.user.events_user.all()
-    
-
 class EventImageAPICreateView(generics.CreateAPIView):
     serializer_class = EventImageSerializer
     permission_classes = [IsManager]
@@ -167,14 +140,35 @@ class PerformanceAPICreate(generics.CreateAPIView):
         if serializer.is_valid():
             serializer.save()
             performance = Performance.objects.get(pk=serializer.data['id'])
+            performance.save()
+
             event = Event.objects.get(pk=self.kwargs['pk'])
             event.performances.add(performance.pk)
-            performance.save()
+
+            if not event.start_date:
+                event.start_date = performance.date
+
+            elif not event.end_date:
+                event.end_date = performance.date
+
+            elif performance.date < event.start_date:
+                event.start_date = performance.date
+
+            elif performance.date > event.end_date:
+                event.end_date = performance.date
+
+            event.save()
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
 
-class TicketTypeAPICreate(generics.CreateAPIView):
+class PerformancesAPIDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Performance.objects.all()
+    serializer_class = PerformanceSerializer
+    permission_classes = [IsManager]
+        
+
+class TicketTypeAPICreateView(generics.CreateAPIView):
     serializer_class = TicketTypeSerializer
     permission_classes = [IsManager]
 
@@ -183,9 +177,70 @@ class TicketTypeAPICreate(generics.CreateAPIView):
 
         if serializer.is_valid():
             serializer.save()
+
             ticket_type = TicketType.objects.get(pk=serializer.data['id'])
             performance = Performance.objects.get(pk=self.kwargs['pk'])
+
             performance.ticket_types.add(ticket_type.pk)
             performance.save()
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class TicketAPICreateView(generics.CreateAPIView):
+    serializer_class = TicketWriteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = TicketWriteSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            ticket = Ticket.objects.get(pk=serializer.data['id'])
+
+            user_buyer = ticket.buyer
+            user_buyer.money -= ticket.ticket_type.price
+            user_buyer.save()
+            
+            performance = Performance.objects.get(pk=self.kwargs['pk'])
+            performance.tickets.add(ticket.pk)
+            performance.save()
+
+            ticket_type = ticket.ticket_type
+            ticket_type.tickets_sold += 1
+            ticket_type.save()
+
+            if ticket_type.tickets_sold == ticket_type.tickets_number:
+                ticket_type.open = False
+                ticket_type.save()
+
+            ticket_types_open = []
+
+            for type_ticket in performance.ticket_types.all():
+                ticket_types_open.append(type_ticket.open)
+
+            if True in ticket_types_open:
+                performance.open = False
+                performance.save()
+
+            events = performance.events_performance.all()
+            performances_open = []
+
+            for event in events:
+                for event_performance in event.performances.all():
+                    performances_open.append(event_performance.open)
+
+                if True in performances_open:
+                    event.open = False
+                    event.save()
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+
+class TicketAPIMyListView(generics.ListAPIView):
+    serializer_class = TicketReadSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Ticket.objects.filter(buyer=self.request.user.pk)

@@ -41,12 +41,20 @@ class PlatformSerializer(serializers.ModelSerializer):
 class TicketTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TicketType
-        fields = ('id', 'sector', 'tickets_number', 'price')
+        fields = ('id', 'sector', 'price', 'tickets_number', 'tickets_sold', 'open')
 
 
-class TicketSerializer(serializers.ModelSerializer):
-    buyer = CustomUserSerializer()
+class TicketReadSerializer(serializers.ModelSerializer):
+    buyer = CustomUserSerializer(required=False)
     ticket_type = TicketTypeSerializer(required=False)
+
+    class Meta:
+        model = Ticket
+        fields = ('id', 'buyer', 'ticket_type')
+
+
+class TicketWriteSerializer(serializers.ModelSerializer):
+    buyer = CustomUserSerializer(required=False)
 
     class Meta:
         model = Ticket
@@ -55,11 +63,10 @@ class TicketSerializer(serializers.ModelSerializer):
 
 class PerformanceSerializer(serializers.ModelSerializer):
     ticket_types = TicketTypeSerializer(many=True, required=False)
-    tickets = TicketSerializer(many=True, required=False)
 
     class Meta:
         model = Performance
-        fields = ('id', 'name', 'time', 'date', 'ticket_types', 'tickets')
+        fields = ('id', 'name', 'time', 'date', 'ticket_types', 'tickets', 'open')
         
 
 class EventImageSerializer(serializers.ModelSerializer):
@@ -102,4 +109,4 @@ class EventWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ('id', 'name', 'category', 'tags', 'description', 'age_limit', 'platform', 'video',
-                'tickets', 'open', 'entry_condition', 'artists', 'manager', 'comments', 'cover', 'images')
+                'tickets', 'open', 'entry_condition', 'artists', 'manager', 'comments', 'start_date', 'end_date', 'cover', 'images')

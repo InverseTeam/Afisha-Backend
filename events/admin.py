@@ -27,19 +27,19 @@ class PlatformAdmin(admin.ModelAdmin):
 
 
 class TicketTypeAdmin(admin.ModelAdmin):
-    list_filter = ('id', 'sector', 'tickets_number', 'price')
+    list_display = ('id', 'sector', 'price', 'tickets_number', 'tickets_sold', 'open')
     search_fields = ('id', 'sector', 'price')
     list_filter = ('id', 'sector', 'price')
 
 
 class TicketAdmin(admin.ModelAdmin):
-    list_filter = ('id', 'buyer', 'ticket_type')
+    list_display= ('id', 'buyer', 'ticket_type')
     search_fields = ('id', 'buyer', 'ticket_type')
     list_filter = ('id', 'buyer', 'ticket_type')
 
 
 class PerformanceAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'time', 'date')
+    list_display = ('id', 'name', 'time', 'date', 'open')
     search_fields = ('id', 'name')
     list_filter = ('id', 'name')
 
@@ -49,7 +49,7 @@ class EventImageAdmin(admin.ModelAdmin):
 
 
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'category', 'description', 'age_limit', 'platform', 'open', 'cover', 'manager')
+    list_display = ('id', 'name', 'category', 'description', 'age_limit', 'platform', 'open', 'manager', 'start_date', 'end_date', 'cover')
     search_fields = ('id', 'name', 'category', 'age_limit', 'manager')
     list_filter = ('id', 'name', 'category', 'age_limit', 'manager')
 
