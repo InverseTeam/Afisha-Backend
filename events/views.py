@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from events.models import *
 from events.serializers import *
 from users.models import CustomUser
-from users.permissions import IsManager
+from users.permissions import IsArtistManager, IsManager
 
 
 class EventAPIListCreate(generics.ListCreateAPIView):
@@ -277,3 +277,23 @@ class TicketAPIMyListView(generics.ListAPIView):
 
     def get_queryset(self):
         return Ticket.objects.filter(buyer=self.request.user.pk)
+    
+
+class ArtistAPIListCreateView(generics.ListCreateAPIView):
+    queryset = Artist.objects.all()
+    serializer_class = ArtistSerializer
+    permission_classes = [IsManager]
+
+
+class ArtistsAPIDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Artist.objects.all()
+    serializer_class = ArtistSerializer
+    permission_classes = [IsArtistManager]
+
+
+class ArtistsAPIMyListView(generics.ListAPIView):
+    serializer_class = ArtistSerializer
+    permission_classes = [IsManager]
+
+    def get_queryset(self):
+        return Artist.objects.filter(manager=self.request.user.id)

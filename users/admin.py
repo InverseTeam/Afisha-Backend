@@ -2,19 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from users.forms import UserChangeForm, UserCreationForm
-from users.models import CustomUser, Role, Artist, ArtistType
-
-
-class ArtistTypeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
-    search_fields = ('id', 'name')
-    list_filter = ('id', 'name')
-
-
-class ArtistAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nickname', 'bio', 'firstname', 'lastname', 'surname', 'artist_type', 'manager')
-    search_fields = ('id', 'nickname')
-    list_filter = ('id', 'nickname')
+from users.models import CustomUser, Role
 
 
 class RoleAdmin(admin.ModelAdmin):
@@ -43,8 +31,6 @@ class UserAdmin(BaseUserAdmin):
     filter_horizontal = ()
 
 
-admin.site.register(ArtistType, ArtistTypeAdmin)
-admin.site.register(Artist, ArtistAdmin)
 admin.site.register(Role, RoleAdmin)
 admin.site.register(CustomUser, UserAdmin)
 admin.site.unregister(Group)

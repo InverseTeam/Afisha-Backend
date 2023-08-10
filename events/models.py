@@ -4,7 +4,36 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models.signals import pre_delete
 from django.dispatch.dispatcher import receiver
 from django_currentuser.db.models import CurrentUserField
-from users.models import Artist, CustomUser
+from users.models import CustomUser
+
+
+class ArtistType(models.Model):
+    name = models.CharField(max_length=100, verbose_name='Название')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Тип артиста'
+        verbose_name_plural = 'Типы артистов'
+
+
+class Artist(models.Model):
+    nickname = models.CharField(max_length=100, verbose_name='Псевдоним')
+    bio = models.TextField(verbose_name='Описание')
+    firstname = models.CharField(max_length=100, verbose_name='Имя')
+    lastname = models.CharField(max_length=100, verbose_name='Фамилия')
+    surname = models.CharField(max_length=100, verbose_name='Отчество')
+    birthday = models.DateField(verbose_name='День рождения')
+    artist_type = models.ForeignKey('ArtistType', blank=True, null=True, on_delete=models.CASCADE, related_name='artists_artisttype', verbose_name='Тип артиста')
+    manager = CurrentUserField(verbose_name='Менеджер')
+
+    def __str__(self):
+        return self.nickname
+
+    class Meta:
+        verbose_name = 'Артист'
+        verbose_name_plural = 'Артисты'
 
 
 class EntryCondition(models.Model):
@@ -86,6 +115,7 @@ class TicketType(models.Model):
 class Ticket(models.Model):
     buyer = CurrentUserField(related_name='tickets_user', verbose_name='Покупатель')
     ticket_type = models.ForeignKey('TicketType', related_name='tickets_tickettype', on_delete=models.DO_NOTHING, verbose_name='Тип билета')
+    performance = models.ForeignKey('Performance', related_name='tickets_performance', on_delete=models.DO_NOTHING, verbose_name='Выступление')
 
     def __str__(self):
         return self.buyer.email
@@ -136,7 +166,7 @@ class Event(models.Model):
     category = models.ForeignKey('Category', blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='Категория')
     tags = models.ManyToManyField('Tag', blank=True, related_name='events_tag', verbose_name='Тэги')
     description = models.TextField(blank=True, null=True, verbose_name='Описание')
-    age_limit = models.IntegerField(default=0, verbose_name='Возрастное орграничение')
+    age_limit = models.IntegerField(default=0, blank=True, verbose_name='Возрастное орграничение')
     platform = models.ForeignKey('Platform', blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='Площадка')
     performances = models.ManyToManyField('Performance', blank=True, related_name='events_performance', verbose_name='Выступления')
     video = models.TextField(blank=True, null=True, verbose_name='Ссылка на видео')
@@ -148,8 +178,8 @@ class Event(models.Model):
     open = models.BooleanField(default=True, blank=True, verbose_name='Событие открыто')
     start_date = models.DateField(blank=True, null=True, verbose_name='Дата начала')
     end_date = models.DateField(blank=True, null=True, verbose_name='Дата конца')
-    tickets_number = models.IntegerField(default=0, verbose_name='Количество билетов')
-    tickets_sold = models.IntegerField(default=0, verbose_name='Билетов продано')
+    tickets_number = models.IntegerField(default=0, blank=True, verbose_name='Количество билетов')
+    tickets_sold = models.IntegerField(default=0, blank=True, verbose_name='Билетов продано')
 
     def __str__(self):
         return self.name
@@ -161,27 +191,27 @@ class Event(models.Model):
 
 
 @receiver(pre_delete, sender=Event)
-def image_model_delete(sender, instance, **kwargs):
+def event_model_delete(sender, instance, **kwargs):
     if instance.cover:
         instance.cover.delete(False)
 
-    if instance.images:
-        for image in instance.images:
+    if instance.images.all():
+        for image in instance.images.all():
             image.image.delete(False)
             image.delete()
 
-    if instance.performances:
-        for performance in instance.performances:
-            for ticket_type in performance.ticket_types:
+    if instance.performances.all():
+        for performance in instance.performances.all():
+            for ticket_type in performance.ticket_types.all():
                 ticket_type.delete()
 
-            for ticket in performance.tickets:
+            for ticket in performance.tickets.all():
                 ticket.delete()
 
         performance.delete()
 
-    if instance.comments:
-        for comment in instance.comments:
+    if instance.comments.all():
+        for comment in instance.comments.all():
             comment.delete()
 
     

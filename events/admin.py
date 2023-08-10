@@ -2,6 +2,18 @@ from django.contrib import admin
 from events.models import *
 
 
+class ArtistTypeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+    search_fields = ('id', 'name')
+    list_filter = ('id', 'name')
+
+
+class ArtistAdmin(admin.ModelAdmin):
+    list_display = ('id', 'nickname', 'bio', 'firstname', 'lastname', 'surname', 'artist_type', 'manager')
+    search_fields = ('id', 'nickname')
+    list_filter = ('id', 'nickname')
+
+
 class EntryConditionAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     search_fields = ('id', 'name')
@@ -33,7 +45,7 @@ class TicketTypeAdmin(admin.ModelAdmin):
 
 
 class TicketAdmin(admin.ModelAdmin):
-    list_display= ('id', 'buyer', 'ticket_type')
+    list_display= ('id', 'buyer', 'ticket_type', 'performance')
     search_fields = ('id', 'buyer', 'ticket_type')
     list_filter = ('id', 'buyer', 'ticket_type')
 
@@ -61,6 +73,8 @@ class CommentAdmin(admin.ModelAdmin):
     list_filter = ('id', 'user', 'rating')
 
 
+admin.site.register(ArtistType, ArtistTypeAdmin)
+admin.site.register(Artist, ArtistAdmin)
 admin.site.register(EntryCondition, EntryConditionAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Tag, TagAdmin)

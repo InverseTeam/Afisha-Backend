@@ -5,35 +5,6 @@ from django.db import models
 from django_currentuser.db.models import CurrentUserField
 
 
-class ArtistType(models.Model):
-    name = models.CharField(max_length=100, verbose_name='Название')
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = 'Тип артиста'
-        verbose_name_plural = 'Типы артистов'
-
-
-class Artist(models.Model):
-    nickname = models.CharField(max_length=100, verbose_name='Псевдоним')
-    bio = models.TextField(verbose_name='Описание')
-    firstname = models.CharField(max_length=100, verbose_name='Имя')
-    lastname = models.CharField(max_length=100, verbose_name='Фамилия')
-    surname = models.CharField(max_length=100, verbose_name='Отчество')
-    birthday = models.DateField(verbose_name='День рождения')
-    artist_type = models.ForeignKey('ArtistType', blank=True, null=True, on_delete=models.CASCADE, related_name='artists_artisttype', verbose_name='Тип артиста')
-    manager = CurrentUserField(verbose_name='Менеджер')
-
-    def __str__(self):
-        return self.nickname
-
-    class Meta:
-        verbose_name = 'Артист'
-        verbose_name_plural = 'Артисты'
-
-
 class Role(models.Model):
     name = models.CharField(max_length=60, verbose_name='Название')
     role_type = models.CharField(max_length=80, verbose_name='Тип')
