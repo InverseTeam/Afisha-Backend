@@ -3,7 +3,7 @@ from routes.models import Route, RouteType
 
 
 class RouteTypeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
+    list_display = ('id', 'name', 'query_text')
     search_fields = ('id', 'name')
     list_filter = ('id', 'name')
 
