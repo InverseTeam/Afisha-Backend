@@ -1,6 +1,6 @@
 # SberAfisha-API
 
-<h5>Events</h5>
+<h4>Events</h4>
 <b>api/events/</b> - получить все мероприятия (GET) или создать новое мероприятие (POST)<br>
 <b>api/events/int:pk/</b> - получить мероприятие по id (GET) или изменить его (PATCH, DELETE))<br>
 <b>api/events/filter/</b> - получить мероприятия по фильтру (GET) (date, category, age_category, published))<br>
@@ -16,7 +16,7 @@
 
 <br>
 
-<h5>Routes</h5>
+<h4>Routes</h4>
 <b>api/routes/</b> - получить все маршруты (GET) или создать новый маршрут (POST))<br>
 <b>api/routes/int:pk/</b> - получить маршрут по id (GET) или изменить его (PATCH, DELETE))<br>
 <b>api/routes/int:pk/tickets/create/</b> - забронировать билет на маршрут (POST))<br>
