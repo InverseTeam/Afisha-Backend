@@ -1,5 +1,15 @@
 # SberAfisha-API
 
+<h4>Users</h4>
+<b>api/users/auth/token/login/</b> - войти в аккаунт пользователя или получить jwt-токен (POST)<br>
+<b>api/users/auth/users/</b> - получить всех пользователей (GET) или создать пользователя (POST)<br>
+<b>api/users/auth/users/me/</b> - получить свой профиль (GET)<br>
+<b>api/artists/</b> - получить всех артистов (GET) или создать артиста (POST)<br>
+<b>api/artists/<int:pk>/</b> - получить артиста (GET) или изменить артиста (PATCH) или удалить артиста (DELETE)<br>
+<b>api/artists/manager/my/</b> - получить своего артиста (для менеджера)<br>
+
+<br>
+
 <h4>Events</h4>
 <b>api/events/</b> - получить все мероприятия (GET) или создать новое мероприятие (POST)<br>
 <b>api/events/int:pk/</b> - получить мероприятие по id (GET) или изменить его (PATCH, DELETE))<br>
