@@ -36,37 +36,24 @@ urlpatterns = [
     # Events
     path('api/events/', EventAPIListCreate.as_view()),
     path('api/events/filter/', EventAPIFilterListView.as_view()),
-    path('api/events/manager/my/', EventAPIMyListView.as_view()),
     path('api/events/<int:pk>/', EventAPIDetailView.as_view()),
     path('api/events/images/create/', EventImageAPICreateView.as_view()),
     path('api/events/<int:pk>/comments/add/', CommentAPICreateView.as_view()),
-    path('api/events/conditions/', EntryConditionAPIListView.as_view()),
     path('api/events/platforms/', PlatformAPIListView.as_view()),
     path('api/events/platforms/<int:pk>/', PlatformAPIDetailView.as_view()),
     path('api/events/categories/', CategoryAPIListView.as_view()),
-    path('api/events/categories/<int:pk>/tags/', TagAPIListView.as_view()),
     path('api/events/categories/<int:pk>/', EventAPICategoryListView.as_view()),
-    path('api/events/tags/<int:pk>/', EventAPITagListView.as_view()),
-    path('api/events/<int:pk>/performances/create/', PerformanceAPICreate.as_view()),
-    path('api/events/performances/<int:pk>/', PerformancesAPIDetailView.as_view()),
-    path('api/events/performances/<int:pk>/ticket_types/create/', TicketTypeAPICreateView.as_view()),
-    path('api/events/performances/<int:pk>/tickets/buy/', TicketAPICreateView.as_view()),
-    path('api/events/performances/tickets/my/', TicketAPIMyListView.as_view()),
+    path('api/events/<int:pk>/tickets/create/', TicketAPICreateView.as_view()),
+    path('api/events/tickets/my/', TicketAPIMyListView.as_view()),
+    path('api/events/generate/', generate_events),
 
-    # Routesu
+    # Routes
     path('api/routes/', RouteAPIListCreateView.as_view()),
     path('api/routes/<int:pk>/', RouteAPIDetailView.as_view()),
-    path('api/routes/filter/', RouteAPIFilterListView.as_view()),
-    path('api/routes/route_type/<int:pk>/', RouteAPIRouteTypeListView.as_view()),
-    path('api/routes/route_types/', RouteAPIRouteTypeListView.as_view()),
+    path('api/routes/<int:pk>/tickets/buy/', RouteAPITicketGetView.as_view()),
     path('api/routes/tickets/my/', RouteAPIMyTicketsView.as_view()),
-    path('api/routes/<int:pk>/tickets/buy/', RouteAPITicketBuyView.as_view()),
-
 
     # Users
-    path('api/artists/', ArtistAPIListCreateView.as_view()),
-    path('api/artists/<int:pk>/', ArtistsAPIDetailView.as_view()),
-    path('api/artists/manager/my/', ArtistsAPIMyListView.as_view()),
     path('api/users/auth/', include('djoser.urls')),
     re_path(r'^api/users/auth/', include('djoser.urls.authtoken')),
 ]

@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.1/howto/deployment/wsgi/
 
 import os, sys
 site_user_root_dir = '/home/b/belogugx/inverse-tracker.store/public_html'
-sys.path.insert(0, site_user_root_dir + '/sber')
+sys.path.insert(0, site_user_root_dir + '/sber_afisha')
 sys.path.insert(1, site_user_root_dir + '/venv/lib/python3.11/site-packages/')
 
 from django.core.wsgi import get_wsgi_application

@@ -1,10 +1,15 @@
+import requests
+from faker import Faker
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from events.models import *
 from events.serializers import *
+from events.parser import get_events
 from users.models import CustomUser
-from users.permissions import IsArtistManager, IsManager
+from users.permissions import IsManager
+from rest_framework.decorators import api_view
+from django.core.files.base import ContentFile
 
 
 class EventAPIListCreate(generics.ListCreateAPIView):
@@ -27,7 +32,7 @@ class EventAPIListCreate(generics.ListCreateAPIView):
         return Response(serializer.errors, status=400)
 
     def get_queryset(self):
-        return Event.objects.filter(open=True)
+        return Event.objects.filter(publish=True)
     
 
 class EventAPIMyListView(generics.ListAPIView):
@@ -46,18 +51,13 @@ class EventAPIFilterListView(generics.ListAPIView):
         events = Event.objects
         desired_date = self.request.GET.get('date', None)
         category = self.request.GET.get('category', None)
-        tags = self.request.GET.get('tags', None)
-        price_limit = self.request.GET.get('price_limit', None)
-        age_limit = self.request.GET.get('age_limit', None)
+        age_category = self.request.GET.get('age_category', None)
+        published = self.request.GET.get('published', None)
 
-        if desired_date: events = events.filter(performances__date=desired_date)
+        if desired_date: events = events.filter(start_date=desired_date)
         if category: events = events.filter(category=category)
-        if price_limit: events = events.filter(price__lte=price_limit)
-        if age_limit: events = events.filter(age_limit__lte=age_limit)
-        
-        if tags: 
-            tags = tags.split(',')
-            events = events.filter(tags__in=tags)
+        if age_category: events = events.filter(age_category=age_category)
+        if published: events = events.filter(published=published)
 
         return events
 
@@ -124,14 +124,6 @@ class CategoryAPIListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class TagAPIListView(generics.ListAPIView):
-    serializer_class = TagSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return Category.objects.get(pk=self.kwargs['pk']).tags.all()
-
-
 class CommentAPICreateView(generics.CreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated]
@@ -149,151 +141,78 @@ class CommentAPICreateView(generics.CreateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-
-class EntryConditionAPIListView(generics.ListAPIView):
-    queryset = EntryCondition.objects.all()
-    serializer_class = EntryConditionSerializer
-    permission_classes = [IsAuthenticated]
-
-
-class PerformanceAPICreate(generics.CreateAPIView):
-    serializer_class = PerformanceSerializer
-    permission_classes = [IsManager]
-
-    def post(self, request, *args, **kwargs):
-        serializer = PerformanceSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-            performance = Performance.objects.get(pk=serializer.data['id'])
-            performance.save()
-
-            event = Event.objects.get(pk=self.kwargs['pk'])
-            event.performances.add(performance.pk)
-
-            if not event.start_date:
-                event.start_date = performance.date
-
-            elif not event.end_date:
-                event.end_date = performance.date
-
-            elif performance.date < event.start_date:
-                event.start_date = performance.date
-
-            elif performance.date > event.end_date:
-                event.end_date = performance.date
-
-            event.save()
-
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-
-class PerformancesAPIDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Performance.objects.all()
-    serializer_class = PerformanceSerializer
-    permission_classes = [IsManager]
-        
-
-class TicketTypeAPICreateView(generics.CreateAPIView):
-    serializer_class = TicketTypeSerializer
-    permission_classes = [IsManager]
-
-    def post(self, request, *args, **kwargs):
-        serializer = TicketTypeSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-
-            ticket_type = TicketType.objects.get(pk=serializer.data['id'])
-            performance = Performance.objects.get(pk=self.kwargs['pk'])
-
-            performance.ticket_types.add(ticket_type.pk)
-            performance.save()
-
-            for event in performance.events_performance.all():
-                event.tickets_number += ticket_type.tickets_number
-                event.save()
-
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class TicketAPICreateView(generics.CreateAPIView):
-    serializer_class = TicketWriteSerializer
+    serializer_class = TicketSerializer
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        serializer = TicketWriteSerializer(data=request.data)
+        serializer = TicketSerializer(data=request.data)
 
         if serializer.is_valid():
             serializer.save()
 
             ticket = Ticket.objects.get(pk=serializer.data['id'])
-
-            user_buyer = ticket.buyer
-            user_buyer.money -= ticket.ticket_type.price
-            user_buyer.save()
-            
-            performance = Performance.objects.get(pk=self.kwargs['pk'])
-            performance.tickets.add(ticket.pk)
-            performance.save()
-
-            ticket_type = ticket.ticket_type
-            ticket_type.tickets_sold += 1
-            ticket_type.save()
-
-            if ticket_type.tickets_sold == ticket_type.tickets_number:
-                ticket_type.open = False
-                ticket_type.save()
-
-            ticket_types_open = []
-
-            for type_ticket in performance.ticket_types.all():
-                ticket_types_open.append(type_ticket.open)
-
-            if True in ticket_types_open:
-                performance.open = False
-                performance.save()
-
-            events = performance.events_performance.all()
-            performances_open = []
-
-            for event in events:
-                for event_performance in event.performances.all():
-                    performances_open.append(event_performance.open)
-
-                if True in performances_open:
-                    event.open = False
-
-                event.tickets_sold += 1
-                event.save()
+            event = Event.objects.get(pk=self.kwargs['pk'])
+            event.tickets.add()
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
 
 class TicketAPIMyListView(generics.ListAPIView):
-    serializer_class = TicketReadSerializer
+    serializer_class = TicketSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Ticket.objects.filter(buyer=self.request.user.pk)
+        return Ticket.objects.filter(user=self.request.user.pk)
     
+    
+@api_view(['POST'])
+def generate_events(request):
+    if request.method == 'POST':
+        events_data = get_events()
+        fake = Faker()
 
-class ArtistAPIListCreateView(generics.ListCreateAPIView):
-    queryset = Artist.objects.all()
-    serializer_class = ArtistSerializer
-    permission_classes = [IsManager]
+        for event in events_data:
+            new_event = Event(
+                name=event['name'],
+                start_date=fake.date_between(start_date='today', end_date='+12m'),
+                description=event['description']
+            )
+
+            if event['age_category'] == '0+':
+                new_event.age_category = Role.objects.get(pk=2)
+
+            else:
+                new_event.age_category = Role.objects.get(pk=1)
+
+            if not Platform.objects.filter(name=event['platform']):
+                platform = Platform(name=event['platform'], location=event['location'])
+                platform.save()
+
+            else:
+                platform = Platform.objects.get(name=event['platform'])
+                new_event.platform = platform
+
+            image = requests.get(event['cover'])
+            image_data = ContentFile(image.content)
+            image_name = str(uuid.uuid4())
+            new_event.cover.save(f'{image_name}.png', image_data, save=True)
+
+            if not Category.objects.filter(name=event['name']):
+                category = Category(name=event['name'])
+                category.save()
+
+            else:
+                category = Category.objects.get(name=event['name'])
+                new_event.category = category
+
+            new_event.category = category
+            new_event.published = True
+            new_event.save()
 
 
-class ArtistsAPIDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Artist.objects.all()
-    serializer_class = ArtistSerializer
-    permission_classes = [IsArtistManager]
+        return Response({'message': 'Events were generated', 'data': request.data})
 
-
-class ArtistsAPIMyListView(generics.ListAPIView):
-    serializer_class = ArtistSerializer
-    permission_classes = [IsManager]
-
-    def get_queryset(self):
-        return Artist.objects.filter(manager=self.request.user.id)
+    return Response({'message': 'Error'}) 

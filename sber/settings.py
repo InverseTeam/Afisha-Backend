@@ -43,8 +43,8 @@ INSTALLED_APPS = [
     'djoser',
     'corsheaders',
     'users.apps.UsersConfig',
-    'routes.apps.RoutesConfig',
     'events.apps.EventsConfig',
+    'routes.apps.RoutesConfig',
     'rest_framework_swagger'
 ]
 
@@ -88,9 +88,9 @@ WSGI_APPLICATION = 'sber.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'belogugx_dj6',
-        'USER': 'belogugx_dj6',
-        'PASSWORD': 'f4%X9Q&^b',
+        'NAME': 'belogugx_dj1',
+        'USER': 'belogugx_dj1',
+        'PASSWORD': 'A%&JLf9p5',
         'HOST': 'localhost',
         'PORT': '3306',
         'OPTIONS': {

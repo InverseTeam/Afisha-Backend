@@ -4,63 +4,11 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models.signals import pre_delete
 from django.dispatch.dispatcher import receiver
 from django_currentuser.db.models import CurrentUserField
-from users.models import CustomUser
-
-
-class ArtistType(models.Model):
-    name = models.CharField(max_length=100, verbose_name='Название')
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = 'Тип артиста'
-        verbose_name_plural = 'Типы артистов'
-
-
-class Artist(models.Model):
-    nickname = models.CharField(max_length=100, verbose_name='Псевдоним')
-    bio = models.TextField(verbose_name='Описание')
-    firstname = models.CharField(max_length=100, verbose_name='Имя')
-    lastname = models.CharField(max_length=100, verbose_name='Фамилия')
-    surname = models.CharField(max_length=100, verbose_name='Отчество')
-    birthday = models.DateField(verbose_name='День рождения')
-    artist_type = models.ForeignKey('ArtistType', blank=True, null=True, on_delete=models.CASCADE, related_name='artists_artisttype', verbose_name='Тип артиста')
-    manager = CurrentUserField(verbose_name='Менеджер')
-
-    def __str__(self):
-        return self.nickname
-
-    class Meta:
-        verbose_name = 'Артист'
-        verbose_name_plural = 'Артисты'
-
-
-class EntryCondition(models.Model):
-    name = models.CharField(max_length=256, verbose_name='Название условия')
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = 'Условие входа'
-        verbose_name_plural = 'Условия входа'
-
-
-class Tag(models.Model):
-    name = models.CharField(max_length=100, verbose_name='Название')
-    
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = 'Тэг'
-        verbose_name_plural = 'Тэги'
+from users.models import CustomUser, Role
 
 
 class Category(models.Model):
     name = models.CharField(max_length=100, verbose_name='Название')
-    tags = models.ManyToManyField('Tag', verbose_name='Тэги')
 
     def __str__(self):
         return self.name
@@ -74,7 +22,7 @@ class Platform(models.Model):
     name = models.CharField(max_length=256, verbose_name='Площадка')
     description = models.TextField(blank=True, null=True, verbose_name='Описание')
     location = models.TextField(blank=True, null=True, verbose_name='Расположение')
-    support_phone = models.CharField(max_length=100, verbose_name='Телефон поддержки')
+    support_phone = models.CharField(default='', blank=True, max_length=100, verbose_name='Телефон поддержки')
 
     def __str__(self):
         return self.name
@@ -82,6 +30,18 @@ class Platform(models.Model):
     class Meta:
         verbose_name = 'Площадка'
         verbose_name_plural = 'Площадки'
+
+
+class Ticket(models.Model):
+    user = CurrentUserField(related_name='tickets_user', verbose_name='Покупатель')
+    attended = models.BooleanField(default=False, blank=True, verbose_name='Посетил')
+
+    def __str__(self):
+        return self.user.username
+
+    class Meta:
+        verbose_name = 'Билет'
+        verbose_name_plural = 'Билеты'
 
 
 class Comment(models.Model):
@@ -95,51 +55,6 @@ class Comment(models.Model):
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
-
-
-class TicketType(models.Model):
-    sector = models.CharField(default='Зал', max_length=255, verbose_name='Сектор')
-    price = models.IntegerField(default=0, verbose_name='Цена')
-    tickets_number = models.IntegerField(default=0, verbose_name='Количество билетов')
-    tickets_sold = models.IntegerField(default=0, verbose_name='Билетов продано')
-    open = models.BooleanField(default=True, blank=True, verbose_name='Открыто')
-
-    def __str__(self):
-        return self.sector
-
-    class Meta:
-        verbose_name = 'Тип билета'
-        verbose_name_plural = 'Типы билетов'
-
-
-class Ticket(models.Model):
-    buyer = CurrentUserField(related_name='tickets_user', verbose_name='Покупатель')
-    ticket_type = models.ForeignKey('TicketType', related_name='tickets_tickettype', on_delete=models.DO_NOTHING, verbose_name='Тип билета')
-    performance = models.ForeignKey('Performance', related_name='tickets_performance', on_delete=models.DO_NOTHING, verbose_name='Выступление')
-
-    def __str__(self):
-        return self.buyer.email
-
-    class Meta:
-        verbose_name = 'Билет'
-        verbose_name_plural = 'Билеты'
-
-
-class Performance(models.Model):
-    name = models.CharField(default='Выступление', max_length=255, verbose_name='Название выступления')
-    time = models.TimeField(blank=True, null=True, verbose_name='Время')
-    date = models.DateField(blank=True, null=True, verbose_name='Дата')
-    ticket_types = models.ManyToManyField('TicketType', blank=True, related_name='performances_tickettype', verbose_name='Типы билетов')
-    tickets = models.ManyToManyField('Ticket', blank=True, related_name='performance_ticket', verbose_name='Билеты')
-    open = models.BooleanField(default=True, blank=True, verbose_name='Открыто')
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        ordering = ['date']
-        verbose_name = 'Выступление'
-        verbose_name_plural = 'Выступления'
 
 
 class EventImage(models.Model):
@@ -164,23 +79,18 @@ class Event(models.Model):
     name = models.CharField(default='', max_length=256, verbose_name='Название')
     cover = models.ImageField(blank=True, null=True, upload_to=get_path, verbose_name='Баннер')
     category = models.ForeignKey('Category', blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='Категория')
-    tags = models.ManyToManyField('Tag', blank=True, related_name='events_tag', verbose_name='Тэги')
     description = models.TextField(blank=True, null=True, verbose_name='Описание')
-    age_limit = models.IntegerField(default=0, blank=True, verbose_name='Возрастное орграничение')
+    age_category = models.ForeignKey(Role, blank=True, null=True, related_name='events_role', on_delete=models.DO_NOTHING, verbose_name='Возрастная категория')
     platform = models.ForeignKey('Platform', blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='Площадка')
-    performances = models.ManyToManyField('Performance', blank=True, related_name='events_performance', verbose_name='Выступления')
-    video = models.TextField(blank=True, null=True, verbose_name='Ссылка на видео')
     images = models.ManyToManyField('EventImage', blank=True, related_name='events_image', verbose_name='Фотографии мероприятия')
     comments = models.ManyToManyField('Comment', blank=True, related_name='events_comment', verbose_name='Комментарии')
-    entry_condition = models.ForeignKey('EntryCondition', blank=True, null=True, on_delete=models.DO_NOTHING, verbose_name='Условия входа')
-    artists = models.ManyToManyField(Artist, blank=True, related_name='events_artist', verbose_name='Артисты')
-    manager = CurrentUserField(related_name='events_manager', verbose_name='Менеджер')
-    open = models.BooleanField(default=True, blank=True, verbose_name='Событие открыто')
     start_date = models.DateField(blank=True, null=True, verbose_name='Дата начала')
     end_date = models.DateField(blank=True, null=True, verbose_name='Дата конца')
     tickets_number = models.IntegerField(default=0, blank=True, verbose_name='Количество билетов')
     tickets_sold = models.IntegerField(default=0, blank=True, verbose_name='Билетов продано')
-
+    tickets = models.ManyToManyField('Ticket', blank=True, related_name='events_ticket', verbose_name='Билеты')
+    published = models.BooleanField(default=False, blank=True, verbose_name='Событие опубликовано')
+    
     def __str__(self):
         return self.name
 
@@ -190,28 +100,14 @@ class Event(models.Model):
         verbose_name_plural = 'События'
 
 
-@receiver(pre_delete, sender=Event)
-def event_model_delete(sender, instance, **kwargs):
-    if instance.cover:
-        instance.cover.delete(False)
+# @receiver(pre_delete, sender=Event)
+# def event_model_delete(sender, instance, **kwargs):
+#     if instance.cover:
+#         instance.cover.delete(False)
 
-    if instance.images.all():
-        for image in instance.images.all():
-            image.image.delete(False)
-            image.delete()
 
-    if instance.performances.all():
-        for performance in instance.performances.all():
-            for ticket_type in performance.ticket_types.all():
-                ticket_type.delete()
-
-            for ticket in performance.tickets.all():
-                ticket.delete()
-
-        performance.delete()
-
-    if instance.comments.all():
-        for comment in instance.comments.all():
-            comment.delete()
+#     if instance.comments.all():
+#         for comment in instance.comments.all():
+#             comment.delete()
 
     
