@@ -42,10 +42,10 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
     'corsheaders',
+    'drf_yasg',
     'users.apps.UsersConfig',
     'events.apps.EventsConfig',
-    'routes.apps.RoutesConfig',
-    'rest_framework_swagger'
+    'routes.apps.RoutesConfig'
 ]
 
 MIDDLEWARE = [

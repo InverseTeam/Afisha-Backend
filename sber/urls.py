@@ -22,14 +22,25 @@ from events.views import *
 from routes.views import *
 from rest_framework import routers
 from django.conf.urls import url
-from rest_framework_swagger.views import get_swagger_view
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 
-schema_view = get_swagger_view(title='Сбер Афиша API')
+
+schema_view = get_schema_view(
+   openapi.Info(
+      title='Сбер афиша API',
+      default_version='v1',
+      description='Платформа для планирования мероприятий и составления маршрутов по туристическим местам в Екатерибурге',
+      terms_of_service='https://www.google.com/policies/terms/',
+      contact=openapi.Contact(email='belogurov.ivan@list.ru'),
+      license=openapi.License(name='BSD License'),
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
-    # Swagger
-    url(r'^$', schema_view),
-    
     # Admin
     path('admin/', admin.site.urls),
 
@@ -46,16 +57,22 @@ urlpatterns = [
     path('api/events/<int:pk>/tickets/create/', TicketAPICreateView.as_view()),
     path('api/events/tickets/my/', TicketAPIMyListView.as_view()),
     path('api/events/generate/', generate_events),
+    path('api/events/not_published/list/', EventAPINotPublishedView.as_view()),
 
     # Routes
     path('api/routes/', RouteAPIListCreateView.as_view()),
     path('api/routes/<int:pk>/', RouteAPIDetailView.as_view()),
-    path('api/routes/<int:pk>/tickets/buy/', RouteAPITicketGetView.as_view()),
+    path('api/routes/<int:pk>/tickets/create/', RouteAPITicketGetView.as_view()),
     path('api/routes/tickets/my/', RouteAPIMyTicketsView.as_view()),
 
     # Users
     path('api/users/auth/', include('djoser.urls')),
     re_path(r'^api/users/auth/', include('djoser.urls.authtoken')),
+
+    # Swagger
+    path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
 
 urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)

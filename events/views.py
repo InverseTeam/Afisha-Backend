@@ -60,6 +60,12 @@ class EventAPIFilterListView(generics.ListAPIView):
         if published: events = events.filter(published=published)
 
         return events
+    
+
+class EventAPINotPublishedView(generics.ListAPIView):
+    queryset = Event.objects.filter(published=False)
+    serializer_class = EventReadSerializer
+    permission_classes = [IsAuthenticated]
 
 
 class EventAPIDetailView(generics.RetrieveUpdateDestroyAPIView):
