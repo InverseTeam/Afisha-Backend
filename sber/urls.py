@@ -57,7 +57,6 @@ urlpatterns = [
     path('api/events/<int:pk>/tickets/create/', TicketAPICreateView.as_view()),
     path('api/events/tickets/my/', TicketAPIMyListView.as_view()),
     path('api/events/generate/', generate_events),
-    path('api/events/not_published/list/', EventAPINotPublishedView.as_view()),
 
     # Routes
     path('api/routes/', RouteAPIListCreateView.as_view()),

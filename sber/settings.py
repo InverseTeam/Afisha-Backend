@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 import os
 from pathlib import Path
+from sber.data import DJANGO_SECRET_KEY, DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-4@!hoi!xwws^yu)h*u7k1$si_6_40ko!kvxw(hoq%2ogdgd)5!'
+SECRET_KEY = DJANGO_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -88,15 +89,28 @@ WSGI_APPLICATION = 'sber.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'belogugx_dj1',
-        'USER': 'belogugx_dj1',
-        'PASSWORD': 'A%&JLf9p5',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
         'OPTIONS': {
          "init_command": "SET foreign_key_checks = 0;"},
 	},
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'belogugx_dj6',
+#         'USER': 'belogugx_dj6',
+#         'PASSWORD': 'f4%X9Q&^b',
+#         'HOST': 'localhost',
+#         'PORT': '3306',
+#         'OPTIONS': {
+#          "init_command": "SET foreign_key_checks = 0;"},
+# 	},
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators

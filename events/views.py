@@ -32,7 +32,7 @@ class EventAPIListCreate(generics.ListCreateAPIView):
         return Response(serializer.errors, status=400)
 
     def get_queryset(self):
-        return Event.objects.filter(publish=True)
+        return Event.objects.filter(open=True)
     
 
 class EventAPIMyListView(generics.ListAPIView):
@@ -52,20 +52,14 @@ class EventAPIFilterListView(generics.ListAPIView):
         desired_date = self.request.GET.get('date', None)
         category = self.request.GET.get('category', None)
         age_category = self.request.GET.get('age_category', None)
-        published = self.request.GET.get('published', None)
+        open = self.request.GET.get('open', None)
 
         if desired_date: events = events.filter(start_date=desired_date)
         if category: events = events.filter(category=category)
-        if age_category: events = events.filter(age_category=age_category)
-        if published: events = events.filter(published=published)
+        if age_category: events = events.filter(age_limit=age_category)
+        if open: events = events.filter(published=open)
 
         return events
-    
-
-class EventAPINotPublishedView(generics.ListAPIView):
-    queryset = Event.objects.filter(published=False)
-    serializer_class = EventReadSerializer
-    permission_classes = [IsAuthenticated]
 
 
 class EventAPIDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -150,11 +144,11 @@ class CommentAPICreateView(generics.CreateAPIView):
 
 
 class TicketAPICreateView(generics.CreateAPIView):
-    serializer_class = TicketSerializer
+    serializer_class = TicketWriteSerializer
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        serializer = TicketSerializer(data=request.data)
+        serializer = TicketWriteSerializer(data=request.data)
 
         if serializer.is_valid():
             serializer.save()
@@ -167,7 +161,7 @@ class TicketAPICreateView(generics.CreateAPIView):
         
 
 class TicketAPIMyListView(generics.ListAPIView):
-    serializer_class = TicketSerializer
+    serializer_class = TicketReadSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
@@ -215,7 +209,7 @@ def generate_events(request):
                 new_event.category = category
 
             new_event.category = category
-            new_event.published = True
+            new_event.open = True
             new_event.save()
 
 

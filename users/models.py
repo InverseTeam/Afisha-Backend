@@ -18,21 +18,21 @@ class Role(models.Model):
 
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, username, password, **extra_fields):
-        if not username:
+    def create_user(self, email, password, **extra_fields):
+        if not email:
             raise ValueError('The Username must be set')
 
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
         extra_fields.setdefault('is_active', True)
-        user = self.model(username=username, **extra_fields)
+        user = self.model(email=email, **extra_fields)
 
         user.set_password(password)
         user.save()
 
         return user
 
-    def create_superuser(self, username, password, **extra_fields):
+    def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
@@ -43,18 +43,17 @@ class CustomUserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        return self.create_user(username, password, **extra_fields)
+        return self.create_user(email, password, **extra_fields)
 
 
 class CustomUser(AbstractUser):
-    username = models.CharField(max_length=100, unique=True, verbose_name='Имя пользователя')
-    email = models.EmailField(blank=True, null=True, verbose_name='Почта')
+    email = models.EmailField(unique=True, verbose_name='Почта')
     firstname = models.CharField(max_length=256, blank=True, verbose_name='Имя')
     lastname = models.CharField(max_length=256, blank=True, verbose_name='Фамилия')
     role = models.ForeignKey('Role', default=1, on_delete=models.CASCADE, related_name='users_role', verbose_name='Роль')
     password = models.CharField(max_length=256, verbose_name='Пароль')
 
-    USERNAME_FIELD = 'username'
+    USERNAME_FIELD = 'email'
     EMAIL_FIELD = 'email'
     REQUIRED_FIELDS = []
     objects = CustomUserManager()
