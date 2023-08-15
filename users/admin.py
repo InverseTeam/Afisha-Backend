@@ -15,16 +15,16 @@ class UserAdmin(BaseUserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
 
-    list_display = ('id', 'email', 'firstname', 'lastname', 'role', 'is_superuser')
+    list_display = ('id', 'email', 'firstname', 'lastname', 'age', 'role', 'is_superuser')
     list_filter = ('is_superuser',)
     fieldsets = (
-        (None, {'fields': ('email', 'firstname', 'lastname', 'role', 'password')}),
+        (None, {'fields': ('email', 'firstname', 'lastname', 'age', 'role', 'password')}),
         ('Permissions', {'fields': ('is_superuser',)}),)
 
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'firstname', 'lastname', 'role', 'password1', 'password2'),
+            'fields': ('email', 'firstname', 'lastname', 'age', 'role', 'password1', 'password2'),
         }),)
     search_fields = ('email',)
     ordering = ('email',)

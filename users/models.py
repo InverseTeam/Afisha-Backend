@@ -20,7 +20,7 @@ class Role(models.Model):
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password, **extra_fields):
         if not email:
-            raise ValueError('The Username must be set')
+            raise ValueError('The Email must be set')
 
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
@@ -47,19 +47,20 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
+    username = None
     email = models.EmailField(unique=True, verbose_name='Почта')
     firstname = models.CharField(max_length=256, blank=True, verbose_name='Имя')
     lastname = models.CharField(max_length=256, blank=True, verbose_name='Фамилия')
     role = models.ForeignKey('Role', default=1, on_delete=models.CASCADE, related_name='users_role', verbose_name='Роль')
+    age = models.IntegerField(blank=True, null=True, verbose_name='Возраст')
     password = models.CharField(max_length=256, verbose_name='Пароль')
 
     USERNAME_FIELD = 'email'
-    EMAIL_FIELD = 'email'
     REQUIRED_FIELDS = []
     objects = CustomUserManager()
 
     def __str__(self):
-        return self.username
+        return self.email
 
     class Meta:
         verbose_name = 'Пользователь'

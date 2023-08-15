@@ -32,14 +32,8 @@ class PlatformAdmin(admin.ModelAdmin):
     list_filter = ('id', 'xid', 'name')
 
 
-class TicketTypeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'sector', 'price', 'tickets_number', 'tickets_sold', 'open')
-    search_fields = ('id', 'sector', 'price')
-    list_filter = ('id', 'sector', 'price')
-
-
 class TicketAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'ticket_type', 'performance', 'attended')
+    list_display = ('id', 'user', 'performance', 'attended')
     search_fields = ('id', 'user')
     list_filter = ('id', 'user', 'attended')
 
@@ -72,7 +66,6 @@ admin.site.register(Artist, ArtistAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Platform, PlatformAdmin)
-admin.site.register(TicketType, TicketTypeAdmin)
 admin.site.register(Ticket, TicketAdmin)
 admin.site.register(Performance, PerformanceAdmin)
 admin.site.register(EventImage, EventImageAdmin)

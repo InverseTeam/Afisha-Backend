@@ -72,25 +72,25 @@ class Platform(models.Model):
         verbose_name_plural = 'Площадки'
 
 
-class TicketType(models.Model):
-    sector = models.CharField(default='Зал', max_length=255, verbose_name='Сектор')
-    price = models.IntegerField(default=0, verbose_name='Цена')
-    tickets_number = models.IntegerField(default=0, verbose_name='Количество билетов')
-    tickets_sold = models.IntegerField(default=0, verbose_name='Билетов продано')
-    open = models.BooleanField(default=True, blank=True, verbose_name='Открыто')
+# class TicketType(models.Model):
+#     sector = models.CharField(default='Зал', max_length=255, verbose_name='Сектор')
+#     tickets_total = models.IntegerField(default=0, verbose_name='Количество билетов')
+#     tickets_sold = models.IntegerField(default=0, verbose_name='Билетов продано')
+#     open = models.BooleanField(default=True, blank=True, verbose_name='Открыто')
 
-    def __str__(self):
-        return self.sector
+#     def __str__(self):
+#         return self.sector
 
-    class Meta:
-        verbose_name = 'Тип билета'
-        verbose_name_plural = 'Типы билетов'
+#     class Meta:
+#         verbose_name = 'Тип билета'
+#         verbose_name_plural = 'Типы билетов'
 
 
 class Ticket(models.Model):
     user = CurrentUserField(related_name='tickets_user', verbose_name='Покупатель')
-    ticket_type = models.ForeignKey('TicketType', related_name='tickets_tickettype', on_delete=models.DO_NOTHING, verbose_name='Тип билета')
-    performance = models.ForeignKey('Performance', related_name='tickets_performance', on_delete=models.DO_NOTHING, verbose_name='Выступление')
+    # ticket_type = models.ForeignKey('TicketType', related_name='tickets_tickettype', on_delete=models.DO_NOTHING, verbose_name='Тип билета')
+    event = models.ForeignKey('Event', blank=True, null=True, related_name='tickets_event', on_delete=models.DO_NOTHING, verbose_name='Выступление')
+    performance = models.ForeignKey('Performance', blank=True, null=True, related_name='tickets_performance', on_delete=models.DO_NOTHING, verbose_name='Выступление')
     attended = models.BooleanField(default=False, blank=True, verbose_name='Посетил')
 
     def __str__(self):
@@ -105,8 +105,10 @@ class Performance(models.Model):
     name = models.CharField(default='Выступление', max_length=255, verbose_name='Название выступления')
     time = models.TimeField(blank=True, null=True, verbose_name='Время')
     date = models.DateField(blank=True, null=True, verbose_name='Дата')
-    ticket_types = models.ManyToManyField('TicketType', blank=True, related_name='performances_tickettype', verbose_name='Типы билетов')
+    # ticket_types = models.ManyToManyField('TicketType', blank=True, related_name='performances_tickettype', verbose_name='Типы билетов')
     tickets = models.ManyToManyField('Ticket', blank=True, related_name='performance_ticket', verbose_name='Билеты')
+    tickets_total = models.IntegerField(default=0, verbose_name='Количество билетов')
+    tickets_sold = models.IntegerField(default=0, verbose_name='Билетов продано')
     open = models.BooleanField(default=True, blank=True, verbose_name='Открыто')
 
     def __str__(self):
@@ -148,9 +150,12 @@ class Event(models.Model):
     end_date = models.DateField(blank=True, null=True, verbose_name='Дата конца')
     artists = models.ManyToManyField(Artist, blank=True, related_name='events_artist', verbose_name='Артисты')
     tickets = models.ManyToManyField('Ticket', blank=True, related_name='events_ticket', verbose_name='Билеты')
+    tickets_total = models.IntegerField(default=0, verbose_name='Количество билетов')
+    tickets_sold = models.IntegerField(default=0, verbose_name='Билетов продано')
     platform = models.ForeignKey('Platform', blank=True, null=True, on_delete=models.CASCADE, verbose_name='Площадка')
     performances = models.ManyToManyField('Performance', blank=True, related_name='events_performance', verbose_name='Выступления')
     comments = models.ManyToManyField('Comment', blank=True, related_name='events_comment', verbose_name='Комментарии')
+    pushkin_payment = models.BooleanField(default=False, verbose_name='Оплата по пушкинской')
     open = models.BooleanField(default=True, blank=True, verbose_name='Событие открыто')
     
     def __str__(self):

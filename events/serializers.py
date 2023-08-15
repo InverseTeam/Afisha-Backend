@@ -46,28 +46,26 @@ class PlatformSerializer(serializers.ModelSerializer):
         fields = ('id', 'xid', 'name', 'description', 'location', 'support_phone')
 
 
-class TicketTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TicketType
-        fields = ('id', 'sector', 'price', 'tickets_number', 'tickets_sold', 'open')
+# class TicketTypeSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = TicketType
+#         fields = ('id', 'sector', 'price', 'tickets_number', 'tickets_sold', 'open')
 
 
 class PerformanceSerializer(serializers.ModelSerializer):
-    ticket_types = TicketTypeSerializer(many=True, required=False)
 
     class Meta:
         model = Performance
-        fields = ('id', 'name', 'time', 'date', 'ticket_types', 'tickets', 'open')
+        fields = ('id', 'name', 'time', 'date', 'tickets', 'open')
 
 
 class TicketReadSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(required=False)
-    ticket_type = TicketTypeSerializer(required=False)
     performance = PerformanceSerializer(required=False)
 
     class Meta:
         model = Ticket
-        fields = ('id', 'user', 'ticket_type', 'performance', 'attended')
+        fields = ('id', 'user', 'event', 'performance', 'attended')
 
 
 class TicketWriteSerializer(serializers.ModelSerializer):
@@ -75,7 +73,7 @@ class TicketWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ticket
-        fields = ('id', 'user', 'ticket_type', 'performance', 'attended')
+        fields = ('id', 'user', 'event', 'performance', 'attended')
         
 
 class EventImageSerializer(serializers.ModelSerializer):
@@ -100,8 +98,8 @@ class EventReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ('id', 'name', 'cover', 'tags', 'category', 'description', 'age_limit', 'platform', 
-                  'comments', 'start_date', 'end_date', 'tickets', 'artists', 'performances', 'open', 
-                  'cover', 'images')
+                  'comments', 'start_date', 'end_date', 'tickets', 'total_tickets', 'sold_tickets', 'artists',
+                  'performances', 'pushkin_payment', 'open', 'cover', 'images')
         
 
 class EventWriteSerializer(serializers.ModelSerializer):
@@ -112,5 +110,5 @@ class EventWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ('id', 'name', 'cover', 'tags', 'category', 'description', 'age_limit', 'platform', 
-                  'comments', 'start_date', 'end_date', 'tickets', 'artists', 'performances', 'open', 
-                  'cover', 'images')
+                  'comments', 'start_date', 'end_date', 'tickets', 'total_tickets', 'sold_tickets',
+                  'artists', 'performances', 'open', 'cover', 'images')

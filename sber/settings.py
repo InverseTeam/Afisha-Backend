@@ -99,18 +99,6 @@ DATABASES = {
 	},
 }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'belogugx_dj6',
-#         'USER': 'belogugx_dj6',
-#         'PASSWORD': 'f4%X9Q&^b',
-#         'HOST': 'localhost',
-#         'PORT': '3306',
-#         'OPTIONS': {
-#          "init_command": "SET foreign_key_checks = 0;"},
-# 	},
-# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
