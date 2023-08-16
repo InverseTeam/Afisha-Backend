@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'users.apps.UsersConfig',
     'events.apps.EventsConfig',
-    'routes.apps.RoutesConfig'
+    # 'routes.apps.RoutesConfig'
 ]
 
 MIDDLEWARE = [

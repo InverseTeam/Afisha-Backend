@@ -1,15 +1,16 @@
+import json
 import requests
+from rest_framework.decorators import api_view
 from faker import Faker
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from events.models import *
 from events.serializers import *
-from events.parser import get_events
+from events.gis import get_place_by_name_2gis
 from users.permissions import IsManagerOrAdminOrReadOnly
-from users.models import CustomUser
-from rest_framework.decorators import api_view
 from django.core.files.base import ContentFile
+from sber.data import GIS_TOKEN
 
 
 class EventAPIListCreate(generics.ListCreateAPIView):
@@ -32,31 +33,7 @@ class EventAPIListCreate(generics.ListCreateAPIView):
         return Response(serializer.errors, status=400)
 
     def get_queryset(self):
-        return Event.objects.filter(open=True)
-    
-
-class EventAPIFilterListView(generics.ListAPIView):
-    serializer_class = EventReadSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        events = Event.objects
-        desired_date = self.request.GET.get('date', None)
-        category = self.request.GET.get('category', None)
-        tags = self.request.GET.get('tags', None)
-        age_limit = self.request.GET.get('age_limit', None)
-        pushkin_payment = self.request.GET.get('pushkin_payment', None)
-
-        if desired_date: events = events.filter(performances__date=desired_date)
-        if category: events = events.filter(category=category)
-        if age_limit: events = events.filter(age_limit__lte=age_limit)
-        if pushkin_payment: pushkin_payment = events.filter(pushkin_payment=pushkin_payment)
-        
-        if tags: 
-            tags = tags.split(',')
-            events = events.filter(tags__in=tags)
-
-        return events
+        return Event.objects.filter(published=True)
 
 
 class EventAPIDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -80,6 +57,86 @@ class EventAPIDetailView(generics.RetrieveUpdateDestroyAPIView):
             return Response(serializer.data, status=201)
         
         return Response(serializer.errors, status=400)
+    
+
+class EventAPIFilterListView(generics.ListAPIView):
+    serializer_class = EventReadSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        events = Event.objects
+        desired_date = self.request.GET.get('date', None)
+        category = self.request.GET.get('category', None)
+        tags = self.request.GET.get('tags', None)
+        age_limit = self.request.GET.get('age_limit', None)
+        pushkin_payment = self.request.GET.get('pushkin_payment', None)
+        published = self.request.GET.get('published', None)
+
+        if desired_date: events = events.filter(date=desired_date)
+        if category: events = events.filter(category=category)
+        if age_limit: events = events.filter(age_limit__lte=age_limit)
+        if pushkin_payment: events = events.filter(pushkin_payment=pushkin_payment)
+        if published: events = events.filter(published=published)
+        
+        if tags: 
+            tags = tags.split(',')
+            events = events.filter(tags__in=tags)
+
+        return events
+    
+
+class EventAPIFavoritesListView(generics.ListAPIView):
+    serializer_class = EventReadSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.request.user.favorites.all()
+    
+
+class EventAPIFavoritesAddView(generics.UpdateAPIView):
+    serializer_class = EventReadSerializer
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        obj = Event.objects.get(pk=self.kwargs['pk'])
+        user = self.request.user
+
+        user.favorites.add(obj.pk)
+        user.save()
+
+        serializer = EventReadSerializer(obj, required=False)
+
+        return Response(serializer.data, status=status.HTTP_206_PARTIAL_CONTENT)
+    
+
+class EventAPIFavoritesRemoveView(generics.UpdateAPIView):
+    serializer_class = EventReadSerializer
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        obj = Event.objects.get(pk=self.kwargs['pk'])
+        user = self.request.user
+
+        user.favorites.remove(obj.pk)
+        user.save()
+
+        serializer = EventReadSerializer(obj, required=False)
+
+        return Response(serializer.data, status=status.HTTP_206_PARTIAL_CONTENT)
+    
+
+class EventAPIAddPushkinWantView(generics.UpdateAPIView):
+    serializer_class = EventReadSerializer
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        obj = Event.objects.get(pk=self.kwargs['pk'])
+        obj.want_pushkin += 1
+        obj.save()
+
+        serializer = EventReadSerializer(obj, required=False)
+
+        return Response(serializer.data, status=status.HTTP_206_PARTIAL_CONTENT)
     
 
 class EventImageAPICreateView(generics.CreateAPIView):
@@ -110,141 +167,62 @@ class TagAPIListCreateView(generics.ListCreateAPIView):
     serializer_class = TagSerializer
     permission_classes = [IsManagerOrAdminOrReadOnly]
 
-
-class CommentAPICreateView(generics.CreateAPIView):
-    serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
-    
-    def post(self, request, *args, **kwargs):
-        serializer = CommentSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-
-            event = Event.objects.get(pk=self.kwargs['pk'])
-            event.comments.add(serializer.data['id'])
-            event.save()
-
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ArtistAPIListCreateView(generics.ListCreateAPIView):
-    queryset = Artist.objects.all()
-    serializer_class = ArtistSerializer
-    permission_classes = [IsAuthenticated]
-
-
-class ArtistsAPIDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Artist.objects.all()
-    serializer_class = ArtistSerializer
-    permission_classes = [IsAuthenticated]
-
-
-class TicketAPICreateView(generics.CreateAPIView):
-    serializer_class = TicketWriteSerializer
-    permission_classes = [IsAuthenticated]
-
-
-    def post(self, request, *args, **kwargs):
-        serializer = TicketWriteSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-
-            ticket = Ticket.objects.get(pk=serializer.data['id'])
-            
-            performance = Performance.objects.get(pk=self.kwargs['pk'])
-            performance.tickets.add(ticket.pk)
-            performance.save()
-
-            ticket_type = ticket.ticket_type
-            ticket_type.tickets_sold += 1
-            ticket_type.save()
-
-            if ticket_type.tickets_sold == ticket_type.tickets_number:
-                ticket_type.open = False
-                ticket_type.save()
-
-            ticket_types_open = []
-
-            for type_ticket in performance.ticket_types.all():
-                ticket_types_open.append(type_ticket.open)
-
-            if True in ticket_types_open:
-                performance.open = False
-                performance.save()
-
-            events = performance.events_performance.all()
-            performances_open = []
-
-            for event in events:
-                for event_performance in event.performances.all():
-                    performances_open.append(event_performance.open)
-
-                if True in performances_open:
-                    event.open = False
-
-                event.tickets_sold += 1
-                event.save()
-
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-
-class TicketAPIMyListView(generics.ListAPIView):
-    serializer_class = TicketReadSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return Ticket.objects.filter(user=self.request.user.pk)
-
     
 @api_view(['POST'])
 def generate_events(request):
     if request.method == 'POST':
-        events_data = get_events()
-        fake = Faker()
+        data = json.loads(request.body)
+        name = data.get('name', None)
+        category = data.get('category', None)
+        total_tickets = data.get('total_tickets', None)
+        price = data.get('price', None)
+        age_limit = data.get('age_limit', None)
+        tags = data.get('tags', None)
+        description = data.get('description', None)
+        artist = data.get('artist', None)
+        platform = data.get('platform', None)
+        address = data.get('address', None)
+        date = data.get('date', None)
+        event_time = data.get('time', None)
+        cover = data.get('cover', None)
+        pushkin_pay = data.get('pushkin_payment', None)
 
-        for event in events_data:
-            new_event = Event(
-                name=event['name'],
-                start_date=fake.date_between(start_date='today', end_date='+12m'),
-                description=event['description']
-            )
+        if not Event.objects.filter(name=name).exists():
+            event = Event(name=name, total_tickets=total_tickets, price=price,
+                            age_limit=age_limit, description=description, artist=artist,
+                            date=date, time=event_time, pushkin_payment=pushkin_pay)
+            
+            if cover:
+                image = requests.get(cover)
+                image_data = ContentFile(image.content)
+                image_name = str(uuid.uuid4())
+                event.cover.save(f'{image_name}.png', image_data, save=True)
 
-            if event['age_category'] == '0+':
-                new_event.age_category = Role.objects.get(pk=2)
+            if not Category.objects.filter(name=category).exists():
+                Category.objects.create(name=category)
 
-            else:
-                new_event.age_category = Role.objects.get(pk=1)
+            event.category = Category.objects.get(name=category)
 
-            if not Platform.objects.filter(name=event['platform']):
-                platform = Platform(name=event['platform'], location=event['location'])
-                platform.save()
+            if tags:
+                for tag in tags:
+                    if not Tag.objects.filter(name=tag).exists():
+                        Tag.objects.create(name=tag)
 
-            else:
-                platform = Platform.objects.get(name=event['platform'])
-                new_event.platform = platform
+                    tag_obj = Tag.objects.get(name=tag)
+                    event.tags.add(tag_obj)
 
-            image = requests.get(event['cover'])
-            image_data = ContentFile(image.content)
-            image_name = str(uuid.uuid4())
-            new_event.cover.save(f'{image_name}.png', image_data, save=True)
+                    if tag_obj not in event.category.tags.all():
+                        category_obj = event.category
+                        category_obj.tags.add(tag_obj.pk)
+                        category_obj.save() 
 
-            if not Category.objects.filter(name=event['name']):
-                category = Category(name=event['name'])
-                category.save()
+            if not Platform.objects.filter(name=platform).exists():
+                platform_data = get_place_by_name_2gis(f'{platform}, {address}')
+                Platform.objects.create(name=platform, address=address, location_data=platform_data)
 
-            else:
-                category = Category.objects.get(name=event['name'])
-                new_event.category = category
+            event.platform = Platform.objects.get(name=platform)
+            event.save()
 
-            new_event.category = category
-            new_event.open = True
-            new_event.save()
-
-
-        return Response({'message': 'Events were generated', 'data': request.data})
+            return Response({'message': 'Events were generated', 'data': request.data})
 
     return Response({'message': 'Error'}) 
