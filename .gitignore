@@ -1,0 +1,12 @@
+.venv
+*/.env
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.pyre/
+.idea/*
+.idea
+idea
+.env
