@@ -72,7 +72,7 @@ class Event(models.Model):
     images = models.ManyToManyField('EventImage', blank=True, related_name='events_image', verbose_name='Фотографии мероприятия')
     date = models.DateField(blank=True, null=True, verbose_name='Дата')
     time = models.TimeField(blank=True, null=True, verbose_name='Время')
-    artist = models.CharField(default='', blank=True, max_length=256, verbose_name='Артист')
+    artist = models.CharField(blank=True, null=True, max_length=256, verbose_name='Артист')
     platform = models.ForeignKey('Platform', blank=True, null=True, on_delete=models.CASCADE, verbose_name='Площадка')
     pushkin_payment = models.BooleanField(default=False, verbose_name='Оплата по пушкинской')
     want_pushkin = models.IntegerField(default=0, blank=True, verbose_name='Хочу по пушкинской')
@@ -85,6 +85,16 @@ class Event(models.Model):
         ordering = ['-date']
         verbose_name = 'Событие'
         verbose_name_plural = 'События'
+
+
+class EventTopic(models.Model):
+    name = models.CharField(max_length=512, verbose_name='Название')
+    description = models.TextField(verbose_name='Описание')
+    events = models.ManyToManyField('Event', blank=True, related_name='eventtopics_event', verbose_name='События')
+
+    class Meta:
+        verbose_name = 'Подборка событий'
+        verbose_name_plural = 'Подборки событий'
 
 
 @receiver(pre_delete, sender=Event)

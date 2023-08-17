@@ -31,8 +31,15 @@ class EventAdmin(admin.ModelAdmin):
     list_filter = ('name', 'category', 'age_limit', 'platform', 'published')
 
 
+class EventTopicAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'description')
+    search_fields = ('id', 'name', 'description')
+    list_filter = ('name',)
+
+
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Platform, PlatformAdmin)
 admin.site.register(EventImage, EventImageAdmin)
 admin.site.register(Event, EventAdmin)
+admin.site.register(EventTopic, EventTopicAdmin)

@@ -53,3 +53,11 @@ class EventWriteSerializer(serializers.ModelSerializer):
         model = Event
         fields = ('id', 'name', 'cover', 'tags', 'category', 'description', 'age_limit', 'platform', 'date', 
                   'time', 'total_tickets', 'price', 'pushkin_payment', 'want_pushkin', 'artist', 'published', 'cover', 'images')
+        
+
+class EventTopicSerializer(serializers.ModelSerializer):
+    events = EventReadSerializer(many=True, required=False)
+
+    class Meta:
+        model = EventTopic
+        fields = ('id', 'name', 'description', 'events')

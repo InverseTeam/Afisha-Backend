@@ -144,6 +144,16 @@ class EventImageAPICreateView(generics.CreateAPIView):
     permission_classes = [IsManagerOrAdminOrReadOnly]
     
 
+class EventTopicAPIListCreateView(generics.ListCreateAPIView):
+    serializer_class = EventTopicSerializer
+    permission_classes = [IsManagerOrAdminOrReadOnly]
+
+
+class EventTopicAPIDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = EventTopicSerializer
+    permission_classes = [IsManagerOrAdminOrReadOnly]
+
+
 class PlatformAPIListCreateView(generics.ListCreateAPIView):
     queryset = Platform.objects.all()
     serializer_class = PlatformSerializer
